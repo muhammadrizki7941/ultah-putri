@@ -168,12 +168,69 @@ export default function BirthdayPutri() {
   const [jokeAnswer, setJokeAnswer] = useState(null)
   const [giftCaught, setGiftCaught] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
+  const [muted, setMuted] = useState(false)
+  const [musicStarted, setMusicStarted] = useState(false)
   const audioRef = useRef(null)
+  const bgm1Ref = useRef(null)
+  const bgm2Ref = useRef(null)
 
   const next = () => {
     setScene((s) => Math.min(s + 1, TOTAL_SCENES - 1))
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
+
+  // Start music on first user interaction
+  const startMusic = useCallback(() => {
+    if (musicStarted) return
+    setMusicStarted(true)
+    if (bgm1Ref.current) {
+      bgm1Ref.current.volume = 0.4
+      bgm1Ref.current.play().catch(() => {})
+    }
+  }, [musicStarted])
+
+  // Switch BGM based on scene (bgm1 for 0-7, bgm2 for 8+)
+  useEffect(() => {
+    if (!musicStarted) return
+    const isEmotional = scene >= 8
+    const fadeOut = (audio) => {
+      if (!audio) return
+      const id = setInterval(() => {
+        if (audio.volume > 0.05) {
+          audio.volume = Math.max(0, audio.volume - 0.05)
+        } else {
+          audio.pause()
+          audio.volume = 0
+          clearInterval(id)
+        }
+      }, 80)
+    }
+    const fadeIn = (audio) => {
+      if (!audio) return
+      audio.volume = 0
+      audio.play().catch(() => {})
+      const id = setInterval(() => {
+        if (audio.volume < 0.35) {
+          audio.volume = Math.min(0.4, audio.volume + 0.05)
+        } else {
+          clearInterval(id)
+        }
+      }, 80)
+    }
+    if (isEmotional) {
+      if (bgm1Ref.current && !bgm1Ref.current.paused) fadeOut(bgm1Ref.current)
+      if (bgm2Ref.current && bgm2Ref.current.paused) fadeIn(bgm2Ref.current)
+    } else {
+      if (bgm2Ref.current && !bgm2Ref.current.paused) fadeOut(bgm2Ref.current)
+      if (bgm1Ref.current && bgm1Ref.current.paused) fadeIn(bgm1Ref.current)
+    }
+  }, [scene, musicStarted])
+
+  // Handle mute/unmute
+  useEffect(() => {
+    if (bgm1Ref.current) bgm1Ref.current.muted = muted
+    if (bgm2Ref.current) bgm2Ref.current.muted = muted
+  }, [muted])
 
   // Confetti di scene terakhir
   useEffect(() => {
@@ -229,7 +286,7 @@ export default function BirthdayPutri() {
               <p className="text-xs text-amber-500 italic">
                 Misi: Buka kado digital ini. Berani gak?
               </p>
-              <NextBtn onClick={next} label="🔓 Siapa takut, Buka ajalah" />
+              <NextBtn onClick={() => { startMusic(); next() }} label="🔓 Siapa takut, Buka ajalah" />
             </div>
           </SceneCard>
         )
@@ -1006,6 +1063,23 @@ export default function BirthdayPutri() {
     <div className="min-h-screen min-h-dvh bg-gradient-to-br from-orange-50 via-amber-50 to-stone-100 
                     flex items-start justify-center px-3 sm:px-4 pt-10 pb-8
                     relative overflow-x-hidden">
+      {/* Background music */}
+      <audio ref={bgm1Ref} src="/bgm1.mp3" loop preload="auto" />
+      <audio ref={bgm2Ref} src="/bgm2.mp3" loop preload="auto" />
+
+      {/* Mute toggle */}
+      {musicStarted && (
+        <button
+          onClick={() => setMuted((m) => !m)}
+          className="fixed top-2 right-3 z-50 w-9 h-9 flex items-center justify-center
+                     bg-white/80 backdrop-blur-sm rounded-full shadow-md border border-amber-200
+                     text-lg hover:scale-110 active:scale-95 transition-all cursor-pointer"
+          aria-label={muted ? 'Unmute' : 'Mute'}
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
+      )}
+
       {/* Background hearts */}
       <FloatingHearts />
 
