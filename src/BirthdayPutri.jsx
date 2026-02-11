@@ -8,7 +8,7 @@ import confetti from 'canvas-confetti'
 // Flow: usil → lucu → gombal → hangat → menyentuh → doa
 // ============================================================
 
-const TOTAL_SCENES = 15
+const TOTAL_SCENES = 16
 
 // ---------- Komponen Tombol Kabur (Funny Running Button) ----------
 function RunawayButton({ label, onCaught }) {
@@ -168,6 +168,7 @@ export default function BirthdayPutri() {
   const [jokeAnswer, setJokeAnswer] = useState(null)
   const [giftCaught, setGiftCaught] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
+  const [prankOpened, setPrankOpened] = useState(false)
   const [muted, setMuted] = useState(false)
   const musicStartedRef = useRef(false)
   const audioRef = useRef(null)
@@ -990,8 +991,153 @@ export default function BirthdayPutri() {
           </SceneCard>
         )
 
-      // -------- SCENE 13: Ending Doa + Confetti --------
-      case 14:
+      // -------- SCENE 14: Prank Gift Box --------
+      case 14: {
+        return (
+          <SceneCard key="s14">
+            <div className="text-center space-y-3">
+              {!prankOpened ? (
+                <>
+                  <motion.p
+                    className="text-4xl"
+                    animate={{ y: [0, -8, 0], rotate: [0, 5, -5, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  >
+                    🎁
+                  </motion.p>
+                  <h2 className="text-lg font-bold text-amber-700 font-[Dancing_Script]">
+                    Sekarang Boleh Buka Kadonya!
+                  </h2>
+                  <p className="text-xs sm:text-sm text-amber-600">
+                    Ada kado spesial buat kamu. Siap?
+                  </p>
+                  {/* Gift Box */}
+                  <div className="relative mx-auto w-40 h-40 sm:w-48 sm:h-48 cursor-pointer"
+                       onClick={() => setPrankOpened(true)}>
+                    {/* Box body */}
+                    <motion.div
+                      className="absolute bottom-0 w-full h-28 sm:h-32 bg-gradient-to-b from-amber-400 to-amber-600 rounded-lg shadow-lg border-2 border-amber-700"
+                      animate={{ scale: [1, 1.02, 1] }}
+                      transition={{ repeat: Infinity, duration: 1.2 }}
+                    >
+                      {/* Ribbon vertical */}
+                      <div className="absolute left-1/2 -translate-x-1/2 w-4 h-full bg-red-500/80" />
+                      {/* Ribbon horizontal */}
+                      <div className="absolute top-1/2 -translate-y-1/2 w-full h-4 bg-red-500/80" />
+                    </motion.div>
+                    {/* Box lid */}
+                    <motion.div
+                      className="absolute top-4 sm:top-2 w-full h-10 bg-gradient-to-b from-amber-300 to-amber-500 rounded-t-lg border-2 border-amber-700 shadow-md"
+                      animate={{ y: [0, -4, 0], rotate: [0, 1, -1, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.5 }}
+                    >
+                      {/* Bow */}
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">🎀</div>
+                    </motion.div>
+                  </div>
+                  <p className="text-[11px] text-amber-500 animate-pulse">Tap kotak untuk buka →</p>
+                </>
+              ) : (
+                <>
+                  {/* Box opens - lid flies off */}
+                  <motion.div
+                    className="relative mx-auto w-40 h-44 sm:w-48 sm:h-52"
+                  >
+                    {/* Lid flying away */}
+                    <motion.div
+                      className="absolute top-0 w-full h-10 bg-gradient-to-b from-amber-300 to-amber-500 rounded-t-lg border-2 border-amber-700"
+                      initial={{ y: 0, rotate: 0, opacity: 1 }}
+                      animate={{ y: -120, rotate: 30, opacity: 0 }}
+                      transition={{ duration: 0.6, ease: 'easeOut' }}
+                    >
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">🎀</div>
+                    </motion.div>
+
+                    {/* Box body stays */}
+                    <div className="absolute bottom-0 w-full h-28 sm:h-32 bg-gradient-to-b from-amber-400 to-amber-600 rounded-lg shadow-lg border-2 border-amber-700 overflow-hidden">
+                      <div className="absolute left-1/2 -translate-x-1/2 w-4 h-full bg-red-500/80" />
+                      <div className="absolute top-1/2 -translate-y-1/2 w-full h-4 bg-red-500/80" />
+                    </div>
+
+                    {/* Putri photo popping out */}
+                    <motion.img
+                      src="/putri-prank.png"
+                      alt="SURPRISE!"
+                      className="absolute bottom-16 sm:bottom-20 left-1/2 w-28 h-28 sm:w-36 sm:h-36 object-contain drop-shadow-xl z-10"
+                      initial={{ y: 60, x: '-50%', scale: 0, rotate: -10 }}
+                      animate={{ y: -10, x: '-50%', scale: 1, rotate: [0, -8, 8, -5, 3, 0] }}
+                      transition={{
+                        y: { delay: 0.3, duration: 0.5, type: 'spring', stiffness: 200 },
+                        scale: { delay: 0.3, duration: 0.4, type: 'spring' },
+                        rotate: { delay: 0.8, duration: 1, ease: 'easeOut' },
+                      }}
+                      onError={(e) => { e.target.style.display = 'none' }}
+                    />
+
+                    {/* Confetti particles */}
+                    {[...Array(8)].map((_, i) => (
+                      <motion.span
+                        key={i}
+                        className="absolute text-lg"
+                        style={{ left: '50%' }}
+                        initial={{ y: 40, x: 0, opacity: 1 }}
+                        animate={{
+                          y: -60 - Math.random() * 60,
+                          x: (Math.random() - 0.5) * 140,
+                          opacity: 0,
+                          rotate: Math.random() * 360,
+                        }}
+                        transition={{ delay: 0.3 + i * 0.08, duration: 1.2, ease: 'easeOut' }}
+                      >
+                        {['✨', '🎊', '⭐', '🎉', '💫', '🌟', '🎀', '🤎'][i]}
+                      </motion.span>
+                    ))}
+                  </motion.div>
+
+                  {/* PRANK text */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1, type: 'spring' }}
+                  >
+                    <p className="text-2xl font-bold text-amber-700">😂 KENA PRANK! 😂</p>
+                  </motion.div>
+
+                  {/* Apology + real gift */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 2.5 }}
+                    className="space-y-2"
+                  >
+                    <p className="text-xs sm:text-sm text-amber-700">
+                      Hehe maaf ya bercanda... 🙏
+                    </p>
+                    <p className="text-xs sm:text-sm text-amber-800 font-medium">
+                      Sekarang buka kado yang beneran ya.
+                      Maaf ya bukan barang mewah, tapi semoga bisa bermanfaat ya...
+                    </p>
+                    <p className="text-base font-bold text-amber-800 font-[Dancing_Script]">
+                      Happy Birthday, Putri! 🎂✨
+                    </p>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 4 }}
+                  >
+                    <NextBtn onClick={next} label="Lanjut ke doa terakhir 🤲" />
+                  </motion.div>
+                </>
+              )}
+            </div>
+          </SceneCard>
+        )
+      }
+
+      // -------- SCENE 15: Ending Doa + Confetti --------
+      case 15:
         return (
           <SceneCard key="s14">
             <div className="text-center space-y-3">
