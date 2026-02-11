@@ -565,9 +565,9 @@ export default function BirthdayPutri() {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-xl"
+                  className="mt-2 p-2.5 bg-amber-600 border border-amber-700 rounded-xl"
                 >
-                  <p className="text-xs sm:text-sm text-amber-800 font-medium">{quizAnswer}</p>
+                  <p className="text-xs sm:text-sm text-white font-medium">{quizAnswer}</p>
                 </motion.div>
               )}
               {quizAnswer && <NextBtn onClick={next} />}
@@ -705,9 +705,9 @@ export default function BirthdayPutri() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="p-2.5 bg-yellow-50 border border-yellow-200 rounded-xl"
+                  className="p-2.5 bg-amber-700 border border-amber-800 rounded-xl"
                 >
-                  <p className="text-xs sm:text-sm text-yellow-700 font-medium">{jokeAnswer}</p>
+                  <p className="text-xs sm:text-sm text-white font-medium">{jokeAnswer}</p>
                 </motion.div>
               )}
               {jokeAnswer && <NextBtn onClick={next} />}
