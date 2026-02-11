@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* Font families */
+@theme {
+  --font-sans: 'Quicksand', sans-serif;
+  --font-cursive: 'Dancing Script', cursive;
+}
+
+/* Smooth scroll & base */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Quicksand', sans-serif;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Animasi floating */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Animasi pulse soft */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Scrollbar hide */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
