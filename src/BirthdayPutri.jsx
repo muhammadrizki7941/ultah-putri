@@ -526,7 +526,7 @@ export default function BirthdayPutri() {
               <p className="text-[11px] text-amber-500 italic">
                 *jangan baper ya, ini bentuk perhatian 😌*
               </p>
-              <div className="space-y-2 sm:space-y-3 text-left">
+              <div className="max-h-[45vh] sm:max-h-none overflow-y-auto space-y-1.5 sm:space-y-3 text-left pr-1 no-scrollbar">
                 {[
                   '🤫 Pendiem banget. Kadang aku bingung, ini lagi oke atau lagi ngambek.',
                   '😶 Kalau ngambek? Diem. Gak ngomong. Tapi auranya terasa se-ruangan.',
@@ -547,7 +547,7 @@ export default function BirthdayPutri() {
                   </motion.p>
                 ))}
               </div>
-              <p className="text-[11px] text-amber-500 pt-1">
+              <p className="text-[11px] text-amber-500">
                 Tapi justru itu semua yang bikin <span className="font-bold text-amber-700">Putri Almeyda</span> gak bisa dilupain 🫠
               </p>
               <NextBtn onClick={next} />
