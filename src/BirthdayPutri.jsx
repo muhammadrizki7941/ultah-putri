@@ -136,7 +136,7 @@ function SceneCard({ children }) {
       exit={{ opacity: 0, y: -40, scale: 0.95 }}
       transition={{ duration: 0.5, ease: 'easeInOut' }}
       className="relative w-full max-w-md mx-auto bg-white/80 backdrop-blur-md 
-                 rounded-3xl shadow-xl shadow-amber-200/40 p-5 sm:p-7 md:p-9 
+                 rounded-3xl shadow-xl shadow-amber-200/40 p-4 sm:p-7 md:p-9 
                  border border-amber-100 z-10"
     >
       {children}
@@ -170,7 +170,10 @@ export default function BirthdayPutri() {
   const [photoIdx, setPhotoIdx] = useState(0)
   const audioRef = useRef(null)
 
-  const next = () => setScene((s) => Math.min(s + 1, TOTAL_SCENES - 1))
+  const next = () => {
+    setScene((s) => Math.min(s + 1, TOTAL_SCENES - 1))
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
 
   // Confetti di scene terakhir
   useEffect(() => {
@@ -205,15 +208,15 @@ export default function BirthdayPutri() {
       case 0:
         return (
           <SceneCard key="s0">
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-3">
               <motion.p
-                className="text-5xl"
+                className="text-4xl"
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               >
                 🔐
               </motion.p>
-              <h1 className="text-xl font-bold text-amber-700">
+              <h1 className="text-lg font-bold text-amber-700">
                 ⚠️ Alert: Anomali Terdeteksi
               </h1>
               <p className="text-amber-600 text-sm leading-relaxed">
@@ -244,9 +247,9 @@ export default function BirthdayPutri() {
         //           7.5s tutup gorden → 8.5s balik tengah aman
         return (
           <SceneCard key="s1">
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-3">
               {/* === Area animasi Putri cek ruangan === */}
-              <div className="relative h-36 sm:h-44 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-amber-50 to-orange-50 border border-amber-100">
+              <div className="relative h-32 sm:h-44 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-amber-50 to-orange-50 border border-amber-100">
 
                 {/* Jendela kiri */}
                 <div className="absolute left-3 top-3">
@@ -359,7 +362,7 @@ export default function BirthdayPutri() {
               </div>
 
               <motion.h2
-                className="text-lg font-bold text-amber-700"
+                className="text-base font-bold text-amber-700"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
@@ -368,7 +371,7 @@ export default function BirthdayPutri() {
               </motion.h2>
 
               <motion.p
-                className="text-sm text-amber-700"
+                className="text-xs sm:text-sm text-amber-700"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
@@ -405,10 +408,10 @@ export default function BirthdayPutri() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 9.5 }}
-                className="pt-2 space-y-3"
+                className="pt-1 space-y-2"
               >
-                <div className="bg-amber-50/60 border border-dashed border-amber-300 rounded-xl p-4">
-                  <p className="text-xs text-amber-600 leading-relaxed">
+                <div className="bg-amber-50/60 border border-dashed border-amber-300 rounded-xl p-3">
+                  <p className="text-[11px] sm:text-xs text-amber-600 leading-relaxed">
                     <span className="font-semibold">📹 Opsional:</span> Kalau dibolehin sih, coba rekam reaksi kamu pas buka ini.
                     Bukan maksa ya — tapi aku penasaran aja gimana ekspresi kamu. 
                     Kalau gak mau juga gapapa, kakak santai kok.
@@ -429,9 +432,9 @@ export default function BirthdayPutri() {
         }
         return (
           <SceneCard key="s2">
-            <div className="text-center space-y-5">
+            <div className="text-center space-y-3 sm:space-y-5">
               <motion.p
-                className="text-4xl"
+                className="text-3xl"
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
               >
@@ -467,15 +470,15 @@ export default function BirthdayPutri() {
       case 3:
         return (
           <SceneCard key="s3">
-            <div className="text-center space-y-4">
-              <p className="text-4xl">🤔</p>
-              <h2 className="text-lg font-bold text-amber-700">
+            <div className="text-center space-y-3">
+              <p className="text-3xl">🤔</p>
+              <h2 className="text-base font-bold text-amber-700">
                 Verifikasi Dulu
               </h2>
-              <p className="text-sm text-amber-600">
+              <p className="text-xs sm:text-sm text-amber-600">
                 Jawab dulu biar aku tau kamu beneran Putri apa bukan:
               </p>
-              <p className="text-base font-semibold text-amber-800">
+              <p className="text-sm font-semibold text-amber-800">
                 "Putri Almeyda itu menurut dia sendiri gimana?"
               </p>
               <div className="space-y-2">
@@ -489,8 +492,8 @@ export default function BirthdayPutri() {
                   <button
                     key={i}
                     onClick={() => setQuizAnswer(opt.resp)}
-                    className="w-full py-2.5 px-4 bg-amber-50 hover:bg-amber-100 
-                               border border-amber-200 rounded-xl text-amber-800 text-sm 
+                    className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 
+                               border border-amber-200 rounded-xl text-amber-800 text-xs sm:text-sm 
                                font-medium transition-all hover:scale-[1.02] cursor-pointer"
                   >
                     {opt.text}
@@ -501,9 +504,9 @@ export default function BirthdayPutri() {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl"
+                  className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-xl"
                 >
-                  <p className="text-sm text-amber-800 font-medium">{quizAnswer}</p>
+                  <p className="text-xs sm:text-sm text-amber-800 font-medium">{quizAnswer}</p>
                 </motion.div>
               )}
               {quizAnswer && <NextBtn onClick={next} />}
@@ -515,12 +518,12 @@ export default function BirthdayPutri() {
       case 4:
         return (
           <SceneCard key="s4">
-            <div className="text-center space-y-4">
-              <p className="text-4xl">🔥</p>
-              <h2 className="text-lg font-bold text-amber-700">
+            <div className="text-center space-y-2 sm:space-y-3">
+              <p className="text-3xl">🔥</p>
+              <h2 className="text-base font-bold text-amber-700">
                 Fakta Tentang Putri Almeyda
               </h2>
-              <p className="text-xs text-amber-500 italic mb-2">
+              <p className="text-[11px] text-amber-500 italic">
                 *jangan baper ya, ini bentuk perhatian 😌*
               </p>
               <div className="space-y-2 sm:space-y-3 text-left">
@@ -538,13 +541,13 @@ export default function BirthdayPutri() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.3 }}
-                    className="text-xs sm:text-sm text-amber-800 bg-amber-50 p-2.5 sm:p-3 rounded-xl border border-amber-100"
+                    className="text-[11px] sm:text-sm text-amber-800 bg-amber-50 p-2 sm:p-3 rounded-xl border border-amber-100"
                   >
                     {roast}
                   </motion.p>
                 ))}
               </div>
-              <p className="text-xs text-amber-500 pt-2">
+              <p className="text-[11px] text-amber-500 pt-1">
                 Tapi justru itu semua yang bikin <span className="font-bold text-amber-700">Putri Almeyda</span> gak bisa dilupain 🫠
               </p>
               <NextBtn onClick={next} />
@@ -556,12 +559,12 @@ export default function BirthdayPutri() {
       case 5:
         return (
           <SceneCard key="s5">
-            <div className="text-center space-y-3">
-              <p className="text-4xl">🎮</p>
-              <h2 className="text-lg font-bold text-amber-700">
+            <div className="text-center space-y-2 sm:space-y-3">
+              <p className="text-3xl">🎮</p>
+              <h2 className="text-base font-bold text-amber-700">
                 Mini Game: Tangkap Hadiahnya!
               </h2>
-              <p className="text-sm text-amber-600">
+              <p className="text-xs sm:text-sm text-amber-600">
                 Hadiahnya nakal nih, coba tangkap kalau bisa~
               </p>
               <RunawayButton
@@ -577,9 +580,9 @@ export default function BirthdayPutri() {
       case 6:
         return (
           <SceneCard key="s6">
-            <div className="text-center space-y-4">
-              <p className="text-4xl">💻🫠</p>
-              <h2 className="text-lg font-bold text-amber-700">
+            <div className="text-center space-y-2 sm:space-y-3">
+              <p className="text-3xl">💻🫠</p>
+              <h2 className="text-base font-bold text-amber-700">
                 Kode Receh buat Putri
               </h2>
               <div className="space-y-2 sm:space-y-3">
@@ -611,15 +614,15 @@ export default function BirthdayPutri() {
       case 7:
         return (
           <SceneCard key="s7">
-            <div className="text-center space-y-4">
-              <p className="text-4xl">😂</p>
-              <h2 className="text-lg font-bold text-amber-700">
+            <div className="text-center space-y-3">
+              <p className="text-3xl">😂</p>
+              <h2 className="text-base font-bold text-amber-700">
                 Quiz Absurd Spesial
               </h2>
-              <p className="text-sm text-amber-600">
+              <p className="text-xs sm:text-sm text-amber-600">
                 Apa persamaan Putri sama notifikasi HP?
               </p>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 {[
                   { text: 'Dua-duanya bikin deg-degan pas muncul 📳', resp: '❌ Salah— tapi kok relate ya 😏' },
                   { text: 'Sama-sama bikin penasaran pas gak muncul 🫠', resp: '⚠️ Putri kalau baca ini pasti cuma diem... tapi dalam hati senyum 😤' },
@@ -629,8 +632,8 @@ export default function BirthdayPutri() {
                   <button
                     key={i}
                     onClick={() => setJokeAnswer(opt.resp)}
-                    className="w-full py-2.5 px-4 bg-amber-50 hover:bg-amber-100 
-                               border border-amber-200 rounded-xl text-amber-800 text-sm 
+                    className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 
+                               border border-amber-200 rounded-xl text-amber-800 text-xs sm:text-sm 
                                font-medium transition-all hover:scale-[1.02] cursor-pointer"
                   >
                     {opt.text}
@@ -641,9 +644,9 @@ export default function BirthdayPutri() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="p-3 bg-yellow-50 border border-yellow-200 rounded-xl"
+                  className="p-2.5 bg-yellow-50 border border-yellow-200 rounded-xl"
                 >
-                  <p className="text-sm text-yellow-700 font-medium">{jokeAnswer}</p>
+                  <p className="text-xs sm:text-sm text-yellow-700 font-medium">{jokeAnswer}</p>
                 </motion.div>
               )}
               {jokeAnswer && <NextBtn onClick={next} />}
@@ -662,9 +665,9 @@ export default function BirthdayPutri() {
         const allSeen = photoIdx >= photos.length - 1
         return (
           <SceneCard key="s8">
-            <div className="text-center space-y-4">
-              <p className="text-4xl">📸</p>
-              <h2 className="text-lg font-bold text-amber-700">
+            <div className="text-center space-y-3">
+              <p className="text-3xl">📸</p>
+              <h2 className="text-base font-bold text-amber-700">
                 Galeri (yang Putri gak tau aku bakal simpan terus) 📂
               </h2>
               <motion.div
@@ -677,19 +680,19 @@ export default function BirthdayPutri() {
                 <img
                   src={photo.src}
                   alt={`Kenangan ${photoIdx + 1}`}
-                  className="w-full h-44 sm:h-56 object-cover rounded-2xl border-4 border-amber-200 shadow-md"
+                  className="w-full h-40 sm:h-56 object-cover rounded-2xl border-4 border-amber-200 shadow-md"
                   onError={(e) => {
                     e.target.style.display = 'none'
                     e.target.nextElementSibling.style.display = 'flex'
                   }}
                 />
                 <div
-                  className="hidden w-full h-44 sm:h-56 bg-gradient-to-br from-amber-100 to-amber-100 
+                  className="hidden w-full h-40 sm:h-56 bg-gradient-to-br from-amber-100 to-amber-100 
                               rounded-2xl border-4 border-amber-200 shadow-md items-center justify-center"
                 >
-                  <p className="text-amber-500 text-sm">📷 Taruh foto di /public/foto{photoIdx + 1}.jpg</p>
+                  <p className="text-amber-500 text-xs sm:text-sm">📷 Taruh foto di /public/foto{photoIdx + 1}.jpg</p>
                 </div>
-                <p className="mt-2 text-sm text-amber-600 italic">{photo.caption}</p>
+                <p className="mt-1.5 text-xs sm:text-sm text-amber-600 italic">{photo.caption}</p>
               </motion.div>
               <div className="flex justify-center gap-2">
                 {photos.map((_, i) => (
@@ -723,12 +726,12 @@ export default function BirthdayPutri() {
       case 9:
         return (
           <SceneCard key="s9">
-            <div className="text-center space-y-4">
-              <p className="text-5xl animate-float">🫂</p>
-              <h2 className="text-xl font-bold text-amber-700 font-[Dancing_Script]">
+            <div className="text-center space-y-3">
+              <p className="text-4xl animate-float">🫂</p>
+              <h2 className="text-lg font-bold text-amber-700 font-[Dancing_Script]">
                 Hei, Putri.
               </h2>
-              <div className="text-sm text-amber-800 leading-relaxed space-y-3 text-left">
+              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2 sm:space-y-3 text-left">
                 <p>
                   Aku tau kamu orangnya pendiem. Gak banyak cerita.
                   Lebih sering dengerin daripada ngomong.
@@ -755,12 +758,12 @@ export default function BirthdayPutri() {
       case 10:
         return (
           <SceneCard key="s10">
-            <div className="text-center space-y-4">
-              <p className="text-5xl">🕰️</p>
-              <h2 className="text-lg font-bold text-amber-700">
+            <div className="text-center space-y-3">
+              <p className="text-4xl">🕰️</p>
+              <h2 className="text-base font-bold text-amber-700">
                 Soal Bertambah Umur...
               </h2>
-              <div className="text-sm text-amber-800 leading-relaxed space-y-3 text-left">
+              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2 sm:space-y-3 text-left">
                 <p>
                   Aku tau bertambah umur itu kadang bikin mikir banyak.
                   Tanggung jawab nambah, ekspektasi orang makin tinggi,
@@ -796,18 +799,18 @@ export default function BirthdayPutri() {
       case 11:
         return (
           <SceneCard key="s11">
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-3">
               <motion.p
-                className="text-5xl"
+                className="text-4xl"
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
               >
                 🫠
               </motion.p>
-              <h2 className="text-xl font-bold text-amber-700 font-[Dancing_Script]">
+              <h2 className="text-lg font-bold text-amber-700 font-[Dancing_Script]">
                 Ini agak jujur. Maaf.
               </h2>
-              <div className="text-sm text-amber-800 leading-relaxed space-y-3">
+              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2 sm:space-y-3">
                 <p>
                   Aku gak tau harus bilang ini kapan, jadi ya sekarang aja.
                 </p>
@@ -837,18 +840,18 @@ export default function BirthdayPutri() {
       case 12:
         return (
           <SceneCard key="s12">
-            <div className="text-center space-y-5">
+            <div className="text-center space-y-3 sm:space-y-4">
               <motion.p
-                className="text-5xl"
+                className="text-4xl"
                 animate={{ scale: [1, 1.15, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               >
                 🎧
               </motion.p>
-              <h2 className="text-xl font-bold text-amber-700 font-[Dancing_Script]">
+              <h2 className="text-lg font-bold text-amber-700 font-[Dancing_Script]">
                 Voice Note Rahasia
               </h2>
-              <p className="text-sm text-amber-600">
+              <p className="text-xs sm:text-sm text-amber-600">
                 Ada sesuatu yang gak bisa diketik. Jadi aku rekamlah. Dengerin ya.
               </p>
               <audio ref={audioRef} src="/voice.mp3" preload="auto" />
@@ -879,21 +882,21 @@ export default function BirthdayPutri() {
       case 13:
         return (
           <SceneCard key="s13">
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-3">
               <motion.p
-                className="text-6xl"
+                className="text-5xl"
                 animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
                 transition={{ repeat: Infinity, duration: 3 }}
               >
                 🎂
               </motion.p>
-              <h2 className="text-2xl font-bold text-amber-800 font-[Dancing_Script]">
+              <h2 className="text-xl font-bold text-amber-800 font-[Dancing_Script]">
                 Barakallah Fi Umrik, Putri
               </h2>
-              <h3 className="text-xl font-bold text-amber-700">
+              <h3 className="text-lg font-bold text-amber-700">
                 Putri Almeyda 🎉
               </h3>
-              <div className="text-sm text-amber-800 leading-relaxed space-y-2">
+              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2">
                 <p>
                   Di umur yang baru ini, aku doain kamu dapet kebahagiaan
                   yang bahkan kamu sendiri gak nyangka bakal dateng.
@@ -931,19 +934,19 @@ export default function BirthdayPutri() {
       case 14:
         return (
           <SceneCard key="s14">
-            <div className="text-center space-y-5">
+            <div className="text-center space-y-3">
               <motion.p
-                className="text-5xl"
+                className="text-4xl"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200 }}
               >
                 🤲
               </motion.p>
-              <h2 className="text-xl font-bold text-amber-800 font-[Dancing_Script]">
+              <h2 className="text-lg font-bold text-amber-800 font-[Dancing_Script]">
                 Doa buat Putri Almeyda
               </h2>
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-900 leading-relaxed space-y-3">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 sm:p-5 text-xs sm:text-sm text-amber-900 leading-relaxed space-y-2 sm:space-y-3">
                 <p className="font-semibold text-amber-800 text-base">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
                 <p>
                   Ya Allah, di hari istimewa hamba-Mu <span className="font-bold text-amber-800">Putri Almeyda</span>,
@@ -1001,7 +1004,7 @@ export default function BirthdayPutri() {
 
   return (
     <div className="min-h-screen min-h-dvh bg-gradient-to-br from-orange-50 via-amber-50 to-stone-100 
-                    flex items-start sm:items-center justify-center px-4 pt-14 pb-24 pb-safe
+                    flex items-start justify-center px-3 sm:px-4 pt-10 pb-8
                     relative overflow-x-hidden">
       {/* Background hearts */}
       <FloatingHearts />
@@ -1010,7 +1013,7 @@ export default function BirthdayPutri() {
       <ProgressBar current={scene} total={TOTAL_SCENES} />
 
       {/* Scene content */}
-      <div className="w-full my-auto">
+      <div className="w-full">
         <AnimatePresence mode="wait">
           {renderScene()}
         </AnimatePresence>
