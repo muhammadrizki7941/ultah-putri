@@ -545,7 +545,7 @@ export default function BirthdayPutri() {
               <div className="space-y-2">
                 {[
                   { text: 'Baik banget 🥰', resp: 'Wkwk, PD amat. Tapi ya... bener sih 😏' },
-                  { text: 'Suka ngambek 😤', resp: 'Nah ini sih, kayaknya 4 hari terakir aku di ngambekin deh💀' },
+                  { text: 'Suka ngambek 😤', resp: 'Nah ini sih, kayaknya 4 hari terakhir aku di ngambekin deh💀' },
                   { text: 'Keras kepala 🪨', resp: 'Aku gak kaget. Data sudah mendukung. 📊' },
                   { text: 'Pendiem 🤫', resp: 'Iya, tapi diam-diam kayaknya suka aku deh? 🫠' },
                   { text: 'Cuek 🤫', resp: 'Iya, tapi cueknya bikin tambah suka 🫠' },
@@ -1115,7 +1115,7 @@ export default function BirthdayPutri() {
                     </p>
                     <p className="text-xs sm:text-sm text-amber-800 font-medium">
                       Sekarang buka kado yang beneran ya.
-                      Maaf ya bukan barang mewah, tapi semoga bisa bermanfaat ya...
+                      Maaf ya bukan barang mewah, tapi semoga bisa bermanfaat ya dek...
                     </p>
                     <p className="text-base font-bold text-amber-800 font-[Dancing_Script]">
                       Happy Birthday, Putri! 🎂✨
