@@ -1,33 +1,478 @@
-﻿import { useState, useEffect, useRef, useCallback } from 'react'
+﻿import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 
 // ============================================================
-// BirthdayPutri.jsx — Website Kado Ulang Tahun Putri Almeyda
-// Single-page React + Tailwind + Framer Motion
-// Flow: usil → lucu → gombal → hangat → menyentuh → doa
+// PERJALANAN ULANG TAHUN PUTRI ALMEYDA
+// 16 Bab cerita bermakna — dari pintu pertama hingga doa terakhir
+// Setiap bab punya makna tersembunyi yang menjadi benang merah
 // ============================================================
 
-const TOTAL_SCENES = 16
+const CHAPTERS = [
+  { id: 0, num: '', title: 'Pintu Awal', icon: '🚪', meaning: 'Setiap cerita besar dimulai dari keberanian membuka pintu pertama.', mood: 'mystery' },
+  { id: 1, num: 'I', title: 'Ritual Persiapan', icon: '🛡️', meaning: 'Yang indah butuh ruang. Yang tulus butuh ketenangan.', mood: 'calm' },
+  { id: 2, num: 'II', title: 'Menembus Waktu', icon: '⏳', meaning: 'Sabar bukan menunggu, tapi percaya bahwa yang baik sedang disiapkan.', mood: 'mystery' },
+  { id: 3, num: 'III', title: 'Cermin Kejujuran', icon: '🪞', meaning: 'Mengenali diri sendiri adalah langkah pertama mencintai diri sendiri.', mood: 'calm' },
+  { id: 4, num: 'IV', title: 'Api Kebenaran', icon: '🔥', meaning: 'Kekurangan bukan aib — itu yang bikin kamu istimewa.', mood: 'warm' },
+  { id: 5, num: 'V', title: 'Arena Tantangan', icon: '🎮', meaning: 'Hal terbaik dalam hidup memang harus diperjuangkan.', mood: 'fun' },
+  { id: 6, num: 'VI', title: 'Kode Takdir', icon: '💻', meaning: 'Ada hal yang gak bisa di-debug — perasaan ini salah satunya.', mood: 'code' },
+  { id: 7, num: 'VII', title: 'Teka-Teki Hati', icon: '🧩', meaning: 'Kadang jawabannya bukan di pilihan, tapi di perasaan.', mood: 'fun' },
+  { id: 8, num: 'VIII', title: 'Lorong Kenangan', icon: '📸', meaning: 'Foto bisa pudar, tapi momen yang kita rasakan akan selamanya hidup.', mood: 'nostalgic' },
+  { id: 9, num: 'IX', title: 'Surat Tak Terkirim', icon: '💌', meaning: 'Hal yang paling jujur sering kali paling sulit diucapkan.', mood: 'emotional' },
+  { id: 10, num: 'X', title: 'Waktu yang Berjalan', icon: '🕰️', meaning: 'Bertambah umur bukan soal menua, tapi soal bertumbuh.', mood: 'emotional' },
+  { id: 11, num: 'XI', title: 'Kata yang Tertahan', icon: '🫠', meaning: 'Diam bukan berarti kosong — justru penuh yang tak bisa diucapkan.', mood: 'emotional' },
+  { id: 12, num: 'XII', title: 'Bisikan Rahasia', icon: '🎧', meaning: 'Suara paling tulus datang dari hati, bukan dari naskah.', mood: 'emotional' },
+  { id: 13, num: 'XIII', title: 'Hari Istimewa', icon: '🎂', meaning: 'Kamu layak dirayakan — bukan karena sempurna, tapi karena kamu ada.', mood: 'celebration' },
+  { id: 14, num: 'XIV', title: 'Kejutan Terakhir', icon: '🎁', meaning: 'Hidup penuh kejutan — yang penting, siapa yang menemanimu.', mood: 'fun' },
+  { id: 15, num: 'XV', title: 'Doa & Harapan', icon: '🤲', meaning: 'Doa terbaik adalah yang dipanjatkan tanpa diminta.', mood: 'spiritual' },
+]
 
-// ---------- Komponen Tombol Kabur (Funny Running Button) ----------
+const MOOD_GRADIENTS = {
+  mystery: 'linear-gradient(135deg, #1c1917 0%, #451a03 50%, #1c1917 100%)',
+  calm: 'linear-gradient(135deg, #fffbeb 0%, #fff7ed 50%, #f5f5f4 100%)',
+  warm: 'linear-gradient(135deg, #fff7ed 0%, #fffbeb 50%, #fef3c7 100%)',
+  fun: 'linear-gradient(135deg, #fffbeb 0%, #fefce8 50%, #fff7ed 100%)',
+  code: 'linear-gradient(135deg, #0c0a09 0%, #1c1917 50%, #0c0a09 100%)',
+  nostalgic: 'linear-gradient(135deg, #fef3c7 0%, #fff7ed 50%, #fffbeb 100%)',
+  emotional: 'linear-gradient(135deg, #fffbeb 0%, #fff1f2 50%, #f5f5f4 100%)',
+  celebration: 'linear-gradient(135deg, #fef3c7 0%, #fefce8 50%, #fff7ed 100%)',
+  spiritual: 'linear-gradient(135deg, #f5f5f4 0%, #fffbeb 50%, #fef3c7 100%)',
+}
+
+const MOOD_EMOJIS = {
+  mystery: ['✨', '🌙', '⭐', '💫', '🔮'],
+  calm: ['🍃', '☁️', '🌿', '🫧', '✨'],
+  warm: ['🤎', '☕', '🍂', '🍪', '✨'],
+  fun: ['🎈', '🎊', '⭐', '🎮', '💫'],
+  code: ['⌨️', '💡', '🖥️', '⚡', '🔧'],
+  nostalgic: ['📸', '🤎', '🍂', '✨', '🌸'],
+  emotional: ['💌', '🤍', '🕊️', '✨', '🫧'],
+  celebration: ['🎉', '🎊', '🎈', '⭐', '🎂'],
+  spiritual: ['🤍', '✨', '🕊️', '🌙', '💫'],
+}
+
+// ---------- Animated Floating Particles ----------
+function DynamicParticles({ mood }) {
+  const particles = useMemo(() => {
+    const emojis = MOOD_EMOJIS[mood] || MOOD_EMOJIS.calm
+    return Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      emoji: emojis[i % emojis.length],
+      left: Math.random() * 100,
+      delay: Math.random() * 8,
+      duration: 8 + Math.random() * 8,
+      size: 10 + Math.random() * 14,
+    }))
+  }, [mood])
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden>
+      {particles.map((p) => (
+        <motion.span
+          key={`${mood}-${p.id}`}
+          className="absolute"
+          style={{ left: `${p.left}%`, fontSize: p.size, bottom: '-20px', opacity: 0.15 }}
+          animate={{ y: [0, -(typeof window !== 'undefined' ? window.innerHeight + 100 : 900)] }}
+          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay, ease: 'linear' }}
+        >
+          {p.emoji}
+        </motion.span>
+      ))}
+    </div>
+  )
+}
+
+// ---------- Opening Title Card ----------
+function TitleCard({ onStart }) {
+  return (
+    <motion.div
+      key="title-card"
+      className="fixed inset-0 z-50 flex items-center justify-center cursor-pointer overflow-hidden"
+      style={{ background: 'linear-gradient(135deg, #0c0a09, #1c1917, #0c0a09)' }}
+      onClick={onStart}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 1.1 }}
+      transition={{ duration: 0.8 }}
+    >
+      {/* Floating star particles */}
+      {Array.from({ length: 30 }, (_, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            width: 1 + Math.random() * 2,
+            height: 1 + Math.random() * 2,
+            background: `rgba(217, 119, 6, ${0.2 + Math.random() * 0.4})`,
+          }}
+          animate={{ opacity: [0, 0.8, 0], scale: [0, 1.5, 0] }}
+          transition={{ duration: 3 + Math.random() * 3, repeat: Infinity, delay: Math.random() * 3 }}
+        />
+      ))}
+
+      {/* Radiating glow */}
+      <motion.div
+        className="absolute w-64 h-64 rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(217,119,6,0.08) 0%, transparent 70%)',
+        }}
+        animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      <div className="text-center z-10 px-8">
+        <motion.p
+          className="text-5xl mb-6"
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 0.5, type: 'spring', stiffness: 150 }}
+        >
+          ✨
+        </motion.p>
+
+        <motion.p
+          className="text-amber-500/60 text-xs sm:text-sm tracking-[0.2em] uppercase mb-3"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1 }}
+        >
+          Sebuah Cerita Untukmu
+        </motion.p>
+
+        <motion.h1
+          className="text-3xl sm:text-4xl font-bold text-amber-400 font-[Dancing_Script] mb-4 animate-glow"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5 }}
+        >
+          Putri Almeyda
+        </motion.h1>
+
+        <motion.div
+          className="w-16 h-px bg-amber-500/30 mx-auto mb-4"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ delay: 2, duration: 0.6 }}
+        />
+
+        <motion.p
+          className="text-amber-300/40 text-xs italic max-w-xs mx-auto leading-relaxed"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.3 }}
+        >
+          "Buka pelan-pelan. Ini bukan sekadar ucapan."
+        </motion.p>
+
+        <motion.div
+          className="mt-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 3 }}
+        >
+          <motion.div
+            className="inline-block px-8 py-3 border border-amber-500/30 rounded-full text-amber-400 text-sm font-medium"
+            animate={{
+              boxShadow: [
+                '0 0 0px rgba(217,119,6,0)',
+                '0 0 25px rgba(217,119,6,0.3)',
+                '0 0 0px rgba(217,119,6,0)',
+              ],
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            Tap untuk memulai ✦
+          </motion.div>
+        </motion.div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ---------- Cinematic Chapter Intro ----------
+function ChapterIntro({ chapter, onComplete }) {
+  useEffect(() => {
+    const timer = setTimeout(onComplete, 3500)
+    return () => clearTimeout(timer)
+  }, [onComplete])
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center cursor-pointer overflow-hidden"
+      style={{ background: 'linear-gradient(135deg, #0c0a09, #1c1917, #0c0a09)' }}
+      onClick={onComplete}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Ambient floating dots */}
+      {Array.from({ length: 20 }, (_, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full bg-amber-400"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            width: 1 + Math.random(),
+            height: 1 + Math.random(),
+          }}
+          animate={{ opacity: [0, 0.5, 0] }}
+          transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }}
+        />
+      ))}
+
+      {/* Radiating ring */}
+      <motion.div
+        className="absolute w-48 h-48 rounded-full border border-amber-500/10"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: [0, 2.5], opacity: [0.3, 0] }}
+        transition={{ delay: 0.5, duration: 2, ease: 'easeOut' }}
+      />
+
+      <div className="text-center z-10 px-8">
+        {chapter.num && (
+          <motion.p
+            className="text-amber-600/40 text-xs tracking-[0.3em] uppercase mb-4"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            Bab {chapter.num}
+          </motion.p>
+        )}
+
+        <motion.p
+          className="text-5xl mb-5"
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
+        >
+          {chapter.icon}
+        </motion.p>
+
+        <motion.h2
+          className="text-2xl sm:text-3xl font-bold text-amber-400 font-[Dancing_Script] mb-5 animate-glow"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+        >
+          {chapter.title}
+        </motion.h2>
+
+        <motion.div
+          className="w-12 h-px bg-amber-500/30 mx-auto mb-5"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ delay: 1, duration: 0.5 }}
+        />
+
+        <motion.p
+          className="text-amber-300/50 text-xs italic max-w-xs mx-auto leading-relaxed"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.3 }}
+        >
+          &ldquo;{chapter.meaning}&rdquo;
+        </motion.p>
+
+        <motion.p
+          className="text-amber-500/25 text-[10px] mt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.5, 0] }}
+          transition={{ delay: 2.5, duration: 1.5, repeat: Infinity }}
+        >
+          tap untuk lanjut
+        </motion.p>
+      </div>
+    </motion.div>
+  )
+}
+
+// ---------- Journey Map Overlay ----------
+function JourneyMap({ current, chapters, onClose }) {
+  return (
+    <motion.div
+      className="fixed inset-0 z-[60] overflow-y-auto"
+      style={{ background: 'linear-gradient(135deg, #0c0a09 0%, #1c1917 50%, #0c0a09 100%)' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <button
+        onClick={onClose}
+        className="fixed top-4 right-4 z-[70] w-10 h-10 flex items-center justify-center
+                   bg-stone-800 rounded-full text-amber-400 text-lg border border-amber-800/30
+                   hover:bg-stone-700 cursor-pointer transition-colors"
+      >
+        ✕
+      </button>
+
+      <div className="max-w-sm mx-auto py-16 px-6">
+        <h3 className="text-center text-amber-400 font-[Dancing_Script] text-xl mb-2">
+          Peta Perjalanan
+        </h3>
+        <p className="text-center text-amber-500/40 text-[10px] mb-8">
+          {current + 1} dari {chapters.length} bab telah dilalui
+        </p>
+
+        <div className="relative">
+          {/* Background line */}
+          <div className="absolute left-5 top-0 bottom-0 w-px bg-amber-900/20" />
+          {/* Animated progress line */}
+          <motion.div
+            className="absolute left-5 top-0 w-px bg-gradient-to-b from-amber-400 to-amber-600"
+            initial={{ height: 0 }}
+            animate={{ height: `${(current / Math.max(chapters.length - 1, 1)) * 100}%` }}
+            transition={{ duration: 1.5, ease: 'easeOut' }}
+          />
+
+          {chapters.map((ch, i) => {
+            const isActive = i === current
+            const isPast = i < current
+            const isFuture = i > current
+            return (
+              <motion.div
+                key={i}
+                className="relative flex items-start gap-4 pb-5"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: isFuture ? 0.2 : 1, x: 0 }}
+                transition={{ delay: i * 0.04, duration: 0.3 }}
+              >
+                <div
+                  className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-base shrink-0 transition-all
+                    ${isActive
+                      ? 'bg-amber-500 shadow-lg shadow-amber-500/40 scale-110'
+                      : isPast
+                      ? 'bg-amber-800/80 border border-amber-600/30'
+                      : 'bg-stone-800/80 border border-stone-700/50'
+                    }`}
+                >
+                  {ch.icon}
+                </div>
+                <div className="pt-1 min-w-0">
+                  <p className={`text-[10px] ${isPast || isActive ? 'text-amber-500/60' : 'text-stone-600'}`}>
+                    {ch.num ? `Bab ${ch.num}` : 'Prolog'}
+                  </p>
+                  <p className={`text-sm font-semibold truncate ${isActive ? 'text-amber-300' : isPast ? 'text-amber-400/70' : 'text-stone-600'}`}>
+                    {ch.title}
+                  </p>
+                  {(isPast || isActive) && (
+                    <p className="text-[9px] text-amber-500/35 italic mt-0.5 leading-snug">
+                      &ldquo;{ch.meaning}&rdquo;
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ---------- Journey Indicator (Top Bar) ----------
+function JourneyIndicator({ current, total, chapter, onOpenMap }) {
+  return (
+    <div className="fixed top-0 left-0 w-full z-40">
+      <div className="h-1 bg-amber-200/20">
+        <motion.div
+          className="h-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 rounded-r-full"
+          animate={{ width: `${((current + 1) / total) * 100}%` }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+        />
+      </div>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-white/50 backdrop-blur-sm">
+        <motion.button
+          onClick={onOpenMap}
+          className="flex items-center gap-1.5 cursor-pointer"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          <span className="text-xs">🗺️</span>
+          <span className="text-[10px] text-amber-600 tracking-wider font-medium">
+            {chapter.icon} {chapter.num ? `Bab ${chapter.num}` : 'Prolog'} · {chapter.title}
+          </span>
+        </motion.button>
+        <span className="text-[10px] text-amber-400/50 font-medium">
+          {current + 1}/{total}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ---------- Scene Card ----------
+function SceneCard({ children, mood = 'calm' }) {
+  const isDark = mood === 'mystery' || mood === 'code'
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -30, scale: 0.97 }}
+      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className={`relative w-full max-w-md mx-auto backdrop-blur-md rounded-3xl shadow-xl
+                  p-5 sm:p-7 md:p-9 z-10 border overflow-hidden
+                  ${isDark
+                    ? 'bg-stone-900/90 shadow-amber-500/10 border-amber-800/20'
+                    : 'bg-white/85 shadow-amber-200/40 border-amber-100'
+                  }`}
+    >
+      {/* Subtle shimmer sweep */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none z-0"
+        style={{
+          background: isDark
+            ? 'linear-gradient(90deg, transparent, rgba(217,119,6,0.04), transparent)'
+            : 'linear-gradient(90deg, transparent, rgba(217,119,6,0.03), transparent)',
+          backgroundSize: '200% 100%',
+        }}
+        animate={{ backgroundPosition: ['-200% 0', '200% 0'] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
+      />
+      <div className="relative z-10">{children}</div>
+    </motion.div>
+  )
+}
+
+// ---------- Next Button ----------
+function NextBtn({ onClick, label = 'Lanjut →' }) {
+  return (
+    <motion.button
+      onClick={onClick}
+      className="mt-4 sm:mt-6 w-full py-3 bg-gradient-to-r from-amber-500 to-amber-700
+                 text-white rounded-2xl font-semibold shadow-md cursor-pointer relative overflow-hidden"
+      whileHover={{ scale: 1.02, boxShadow: '0 0 25px rgba(217,119,6,0.3)' }}
+      whileTap={{ scale: 0.97 }}
+    >
+      {/* Sweeping glow */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/20 to-transparent"
+        animate={{ x: ['-100%', '200%'] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
+      />
+      <span className="relative z-10">{label}</span>
+    </motion.button>
+  )
+}
+
+// ---------- Runaway Button (Mini Game) ----------
 function RunawayButton({ label, onCaught }) {
   const [pos, setPos] = useState({ x: 0, y: 0 })
   const [caught, setCaught] = useState(false)
   const [attempts, setAttempts] = useState(0)
-  const containerRef = useRef(null)
 
   const runAway = useCallback(() => {
     setAttempts((a) => a + 1)
-    const maxX = 160
-    const maxY = 120
     setPos({
-      x: (Math.random() - 0.5) * maxX,
-      y: (Math.random() - 0.5) * maxY,
+      x: (Math.random() - 0.5) * 160,
+      y: (Math.random() - 0.5) * 120,
     })
   }, [])
 
-  // Setelah 6 kali gagal, biarkan ketangkap
   const handleClick = () => {
     if (attempts >= 5) {
       setCaught(true)
@@ -38,7 +483,7 @@ function RunawayButton({ label, onCaught }) {
   }
 
   return (
-    <div ref={containerRef} className="relative flex flex-col items-center justify-center h-40 sm:h-48">
+    <div className="relative flex flex-col items-center justify-center h-40 sm:h-48">
       {!caught ? (
         <>
           <p className="text-sm text-amber-500 mb-2">
@@ -55,18 +500,14 @@ function RunawayButton({ label, onCaught }) {
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             onMouseEnter={attempts < 5 ? runAway : undefined}
             onClick={handleClick}
-            className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full 
-                       font-semibold shadow-lg hover:shadow-xl text-lg cursor-pointer select-none"
+            className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full
+                       font-semibold shadow-lg text-lg cursor-pointer select-none"
           >
             🎁 {label}
           </motion.button>
         </>
       ) : (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="text-center"
-        >
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-center">
           <p className="text-4xl mb-2">🎉</p>
           <p className="text-amber-700 font-semibold">Yeay, dapet! Lanjut ya~</p>
         </motion.div>
@@ -75,127 +516,95 @@ function RunawayButton({ label, onCaught }) {
   )
 }
 
-// ---------- Komponen Progress Bar ----------
-function ProgressBar({ current, total }) {
-  const pct = ((current + 1) / total) * 100
-  return (
-    <div className="fixed top-0 left-0 w-full z-50">
-      <div className="h-1.5 bg-amber-100">
-        <motion.div
-          className="h-full bg-gradient-to-r from-amber-500 to-amber-700 rounded-r-full"
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.5 }}
-        />
-      </div>
-      <p className="text-center text-[11px] text-amber-500 mt-1 font-medium">
-        {current + 1} / {total}
-      </p>
-    </div>
-  )
-}
-
-// ---------- Komponen Floating Hearts Background ----------
-function FloatingHearts() {
-  const hearts = Array.from({ length: 18 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    delay: Math.random() * 8,
-    dur: 6 + Math.random() * 6,
-    size: 12 + Math.random() * 18,
-    emoji: ['🤎', '☕', '🍂', '✨', '🌿', '🍪'][i % 6],
-  }))
-  return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden>
-      {hearts.map((h) => (
-        <motion.span
-          key={h.id}
-          className="absolute opacity-20"
-          style={{ left: `${h.left}%`, fontSize: h.size, top: '105%' }}
-          animate={{ y: [0, -(window.innerHeight + 200)] }}
-          transition={{
-            duration: h.dur,
-            repeat: Infinity,
-            delay: h.delay,
-            ease: 'linear',
-          }}
-        >
-          {h.emoji}
-        </motion.span>
-      ))}
-    </div>
-  )
-}
-
-// ---------- Komponen Card Wrapper ----------
-function SceneCard({ children }) {
+// ---------- Chapter Meaning Footer ----------
+function ChapterMeaning({ meaning }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -40, scale: 0.95 }}
-      transition={{ duration: 0.5, ease: 'easeInOut' }}
-      className="relative w-full max-w-md mx-auto bg-white/80 backdrop-blur-md 
-                 rounded-3xl shadow-xl shadow-amber-200/40 p-4 sm:p-7 md:p-9 
-                 border border-amber-100 z-10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 3 }}
+      className="mt-5 pt-3 border-t border-amber-200/20"
     >
-      {children}
+      <p className="text-[10px] text-amber-400/40 italic text-center leading-relaxed">
+        ✦ &ldquo;{meaning}&rdquo;
+      </p>
     </motion.div>
   )
 }
 
-// ---------- Tombol Next ----------
-function NextBtn({ onClick, label = 'Lanjut →' }) {
-  return (
-    <button
-      onClick={onClick}
-      className="mt-4 sm:mt-6 w-full py-3 bg-gradient-to-r from-amber-500 to-amber-700 
-                 text-white rounded-2xl font-semibold shadow-md hover:shadow-lg 
-                 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
-    >
-      {label}
-    </button>
-  )
-}
-
 // =============================================
-//  KOMPONEN UTAMA
+//  MAIN COMPONENT
 // =============================================
 export default function BirthdayPutri() {
-  const [scene, setScene] = useState(0)
-  const [fakeLoading, setFakeLoading] = useState(false)
+  const [chapter, setChapter] = useState(-1)  // -1 = title card
+  const [showIntro, setShowIntro] = useState(false)
+  const [showMap, setShowMap] = useState(false)
+  const [muted, setMuted] = useState(false)
   const [quizAnswer, setQuizAnswer] = useState(null)
   const [jokeAnswer, setJokeAnswer] = useState(null)
   const [giftCaught, setGiftCaught] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
   const [prankOpened, setPrankOpened] = useState(false)
-  const [muted, setMuted] = useState(false)
+
   const musicStartedRef = useRef(false)
   const audioRef = useRef(null)
   const bgm1Ref = useRef(null)
   const bgm2Ref = useRef(null)
 
-  // Try to start music (called on every user tap until it works)
+  const currentChapter = chapter >= 0 ? CHAPTERS[chapter] : null
+  const currentMood = currentChapter?.mood || 'mystery'
+
+  const bgGradient = chapter === -1 || showIntro
+    ? 'linear-gradient(135deg, #0c0a09, #1c1917, #0c0a09)'
+    : (MOOD_GRADIENTS[currentMood] || MOOD_GRADIENTS.calm)
+
+  // Try start music
   const tryPlayBgm = () => {
     if (musicStartedRef.current) return
     const bgm1 = bgm1Ref.current
     if (!bgm1) return
     bgm1.volume = 0.4
-    bgm1.play().then(() => {
-      musicStartedRef.current = true
-    }).catch(() => {})
+    bgm1.play().then(() => { musicStartedRef.current = true }).catch(() => {})
   }
 
-  const next = () => {
-    setScene((s) => Math.min(s + 1, TOTAL_SCENES - 1))
+  // Navigate to next chapter
+  const next = useCallback(() => {
+    const newChapter = chapter + 1
+    if (newChapter >= CHAPTERS.length) return
+    const skipIntro = [2].includes(newChapter)
+    setChapter(newChapter)
+    setShowIntro(!skipIntro)
     window.scrollTo({ top: 0, behavior: 'instant' })
+    tryPlayBgm()
+  }, [chapter])
+
+  // Start from title card
+  const startFromTitle = () => {
+    setChapter(0)
     tryPlayBgm()
   }
 
-  // Switch BGM based on scene (bgm1 for 0-7, bgm2 for 8+)
+  // Complete chapter intro
+  const completeIntro = useCallback(() => {
+    setShowIntro(false)
+  }, [])
+
+  // Auto-advance for fake loading (chapter 2)
+  useEffect(() => {
+    if (chapter === 2 && !showIntro) {
+      const timer = setTimeout(() => {
+        setChapter(3)
+        setShowIntro(true)
+        window.scrollTo({ top: 0, behavior: 'instant' })
+      }, 12000)
+      return () => clearTimeout(timer)
+    }
+  }, [chapter, showIntro])
+
+  // BGM switching (bgm1 for 0-7, bgm2 for 8+)
   useEffect(() => {
     if (!musicStartedRef.current) return
-    const isEmotional = scene >= 8
+    const isEmotional = chapter >= 8
     const fadeOut = (audio) => {
       if (!audio || audio.paused) return
       const id = setInterval(() => {
@@ -228,74 +637,95 @@ export default function BirthdayPutri() {
       fadeOut(bgm2Ref.current)
       fadeIn(bgm1Ref.current)
     }
-  }, [scene])
+  }, [chapter])
 
-  // Handle mute/unmute
+  // Mute/unmute
   useEffect(() => {
     if (bgm1Ref.current) bgm1Ref.current.muted = muted
     if (bgm2Ref.current) bgm2Ref.current.muted = muted
   }, [muted])
 
-  // Confetti di scene terakhir
+  // Confetti on final chapter
   useEffect(() => {
-    if (scene === TOTAL_SCENES - 1) {
+    if (chapter === CHAPTERS.length - 1 && !showIntro) {
       const dur = 4000
       const end = Date.now() + dur
       const frame = () => {
         confetti({
-          particleCount: 4,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 },
+          particleCount: 4, angle: 60, spread: 55, origin: { x: 0 },
           colors: ['#d97706', '#b45309', '#f59e0b', '#fbbf24', '#fde68a'],
         })
         confetti({
-          particleCount: 4,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 },
+          particleCount: 4, angle: 120, spread: 55, origin: { x: 1 },
           colors: ['#d97706', '#b45309', '#f59e0b', '#fbbf24', '#fde68a'],
         })
         if (Date.now() < end) requestAnimationFrame(frame)
       }
       frame()
     }
-  }, [scene])
+  }, [chapter, showIntro])
 
   // =============== RENDER SCENES ===============
   const renderScene = () => {
-    switch (scene) {
-      // -------- SCENE 0: Gate Portal --------
+    switch (chapter) {
+      // ======== BAB 0: Pintu Awal (Gate Portal) ========
       case 0:
         return (
-          <SceneCard key="s0">
-            <div className="text-center space-y-3">
+          <SceneCard mood="mystery">
+            <div className="text-center space-y-4">
               <motion.p
-                className="text-4xl"
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 2 }}
+                className="text-5xl"
+                animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.15, 1] }}
+                transition={{ repeat: Infinity, duration: 3 }}
               >
                 🔐
               </motion.p>
-              <h1 className="text-lg font-bold text-amber-700">
-                ⚠️ Alert: Anomali Terdeteksi
-              </h1>
-              <p className="text-amber-600 text-sm leading-relaxed">
+              <motion.h1
+                className="text-lg font-bold text-amber-400"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                ⚠️ Anomali Terdeteksi
+              </motion.h1>
+              <motion.p
+                className="text-amber-300/70 text-sm leading-relaxed"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+              >
                 Server mendeteksi ada makhluk yang hari ini bertambah tua.
                 Identitas berhasil ditelusuri...
-              </p>
-              <p className="text-2xl font-bold text-amber-800 font-[Dancing_Script]">
+              </motion.p>
+              <motion.p
+                className="text-2xl font-bold text-amber-400 font-[Dancing_Script] animate-glow"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.5, type: 'spring' }}
+              >
                 ✨ Putri Almeyda ✨
-              </p>
-              <p className="text-xs text-amber-500 italic">
+              </motion.p>
+              <motion.p
+                className="text-xs text-amber-500/50 italic"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2 }}
+              >
                 Misi: Buka kado digital ini. Berani gak?
-              </p>
-              <NextBtn onClick={() => { tryPlayBgm(); next() }} label="🔓 Siapa takut, Buka ajalah" />
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2.5 }}
+              >
+                <NextBtn onClick={next} label="🔓 Siapa takut, Buka ajalah" />
+              </motion.div>
             </div>
+            <ChapterMeaning meaning={CHAPTERS[0].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 1: Persiapan Sebelum Buka --------
+      // ======== BAB I: Ritual Persiapan ========
       case 1: {
         const prepItems = [
           '📍 Cari tempat yang nyaman dan tenang dulu.',
@@ -303,26 +733,20 @@ export default function BirthdayPutri() {
           '👀 Pastiin gak ada yang ngintip layar kamu.',
           '☕ Kalau bisa, siapin minum. Biar makin adem.',
         ]
-        // Timeline: 0s tengah → 1s ke jendela → 2.5s tutup jendela →
-        //           3.5s ke pintu → 5s tutup pintu → 6s ke gorden →
-        //           7.5s tutup gorden → 8.5s balik tengah aman
         return (
-          <SceneCard key="s1">
+          <SceneCard mood="calm">
             <div className="text-center space-y-3">
-              {/* === Area animasi Putri cek ruangan === */}
+              {/* Animated room check area */}
               <div className="relative h-32 sm:h-44 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-amber-50 to-orange-50 border border-amber-100">
-
-                {/* Jendela kiri */}
+                {/* Window */}
                 <div className="absolute left-3 top-3">
                   <div className="relative w-14 h-16 border-2 border-amber-400 rounded-md bg-sky-100 overflow-hidden">
-                    {/* kaca jendela */}
                     <div className="absolute inset-0 grid grid-cols-2 gap-px p-px">
                       <div className="bg-sky-200/60 rounded-sm" />
                       <div className="bg-sky-200/60 rounded-sm" />
                       <div className="bg-sky-200/60 rounded-sm" />
                       <div className="bg-sky-200/60 rounded-sm" />
                     </div>
-                    {/* daun jendela menutup */}
                     <motion.div
                       className="absolute inset-0 bg-amber-700/90 rounded-sm origin-left flex items-center justify-center"
                       initial={{ scaleX: 0 }}
@@ -335,13 +759,11 @@ export default function BirthdayPutri() {
                   <p className="text-[9px] text-amber-500 mt-0.5 text-center">Jendela</p>
                 </div>
 
-                {/* Pintu kanan */}
+                {/* Door */}
                 <div className="absolute right-3 top-3">
                   <div className="relative w-12 h-18 border-2 border-amber-400 rounded-t-md bg-amber-100 overflow-hidden">
-                    {/* pintu */}
                     <div className="absolute inset-0 bg-amber-200/60" />
                     <div className="absolute right-1.5 top-1/2 w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    {/* pintu menutup / gembok muncul */}
                     <motion.div
                       className="absolute inset-0 bg-amber-700/90 rounded-sm origin-right flex items-center justify-center"
                       initial={{ scaleX: 0 }}
@@ -354,7 +776,7 @@ export default function BirthdayPutri() {
                   <p className="text-[9px] text-amber-500 mt-0.5 text-center">Pintu</p>
                 </div>
 
-                {/* Gorden atas */}
+                {/* Curtain */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2">
                   <motion.div
                     className="flex gap-0"
@@ -376,7 +798,7 @@ export default function BirthdayPutri() {
                   </motion.p>
                 </div>
 
-                {/* Status teks — speech bubble */}
+                {/* Status bubbles */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
                   {[
                     { text: '👀 Mengecek...', delay: 0.5, dur: 2 },
@@ -402,16 +824,16 @@ export default function BirthdayPutri() {
                   ))}
                 </div>
 
-                {/* Kepala Putri bergerak */}
+                {/* Putri head moving */}
                 <motion.img
                   src="/putri-head.png"
                   alt="Putri celingukan"
                   className="absolute w-16 h-16 sm:w-24 sm:h-24 object-contain drop-shadow-lg"
                   style={{ left: 'calc(50% - 32px)', top: 'calc(50% - 24px)' }}
                   animate={{
-                    x:      [0,  -55,  -55,  0,   55,   55,  0,    0,   0],
-                    y:      [0,  -15,  -15,  0,  -15,  -15,  0,  -25,   0],
-                    rotate: [0,  -12,  -12,  0,   12,   12,  0,    0,   0],
+                    x: [0, -55, -55, 0, 55, 55, 0, 0, 0],
+                    y: [0, -15, -15, 0, -15, -15, 0, -25, 0],
+                    rotate: [0, -12, -12, 0, 12, 12, 0, 0, 0],
                   }}
                   transition={{
                     duration: 9.5,
@@ -444,10 +866,9 @@ export default function BirthdayPutri() {
                 {prepItems.map((item, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1.2 + i * 1.2, duration: 0.5 }}
-                    className="overflow-hidden"
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.2 + i * 1.2, duration: 0.5, type: 'spring' }}
                   >
                     <p className="bg-amber-50 border border-amber-100 rounded-xl p-2.5 sm:p-3 text-amber-800 text-xs sm:text-sm">
                       {item.split('').map((char, ci) => (
@@ -474,65 +895,96 @@ export default function BirthdayPutri() {
                 <div className="bg-amber-50/60 border border-dashed border-amber-300 rounded-xl p-3">
                   <p className="text-[11px] sm:text-xs text-amber-600 leading-relaxed">
                     <span className="font-semibold">📹 Opsional:</span> Kalau dibolehin sih, coba rekam reaksi kamu pas buka ini.
-                    Bukan maksa ya — tapi aku penasaran aja gimana ekspresi kamu. 
+                    Bukan maksa ya — tapi aku penasaran aja gimana ekspresi kamu.
                     Kalau gak mau juga gapapa, kakak santai kok.
                   </p>
                 </div>
                 <NextBtn onClick={next} label="Oke, udah siap. Lanjut →" />
               </motion.div>
             </div>
+            <ChapterMeaning meaning={CHAPTERS[1].meaning} />
           </SceneCard>
         )
       }
 
-      // -------- SCENE 2: Fake Loading --------
+      // ======== BAB II: Menembus Waktu (Fake Loading) ========
       case 2:
-        if (!fakeLoading) {
-          setFakeLoading(true)
-          setTimeout(() => next(), 12000)
-        }
         return (
-          <SceneCard key="s2">
-            <div className="text-center space-y-3 sm:space-y-5">
-              <motion.p
-                className="text-3xl"
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-              >
-                ⏳
-              </motion.p>
-              <p className="text-amber-700 font-semibold">
-                Bentar ya. Sabar dikit...
-              </p>
-              <div className="w-full bg-amber-100 rounded-full h-3 overflow-hidden">
+          <SceneCard mood="mystery">
+            <div className="text-center space-y-4 sm:space-y-5">
+              {/* Spinning portal */}
+              <div className="relative w-24 h-24 mx-auto">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-amber-500 to-amber-700 rounded-full"
+                  className="absolute inset-0 rounded-full border-2 border-amber-500/30"
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+                />
+                <motion.div
+                  className="absolute inset-2 rounded-full border-2 border-amber-400/20"
+                  animate={{ rotate: -360 }}
+                  transition={{ repeat: Infinity, duration: 5, ease: 'linear' }}
+                />
+                <motion.div
+                  className="absolute inset-4 rounded-full border border-amber-300/10"
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 7, ease: 'linear' }}
+                />
+                <motion.p
+                  className="absolute inset-0 flex items-center justify-center text-3xl"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                >
+                  ⏳
+                </motion.p>
+              </div>
+
+              <p className="text-amber-400 font-semibold">
+                Menembus dimensi waktu...
+              </p>
+
+              <div className="w-full bg-amber-900/30 rounded-full h-2.5 overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 rounded-full"
                   initial={{ width: '0%' }}
                   animate={{ width: '100%' }}
-                  transition={{ duration: 8 }}
+                  transition={{ duration: 10, ease: 'easeInOut' }}
                 />
               </div>
-              <div className="text-xs text-amber-500 space-y-1">
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+
+              <div className="text-xs text-amber-500/60 space-y-1.5">
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
                   ▸ Ngumpulin doa dari berbagai penjuru...
                 </motion.p>
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}>
                   ▸ Nyiapin kejutan kecil-kecilan...
                 </motion.p>
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 4 }}>
                   ▸ Menghitung level pendiem Putri... (tinggi banget ternyata)
+                </motion.p>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 6 }}>
+                  ▸ Menyusun kata yang selama ini tertahan...
+                </motion.p>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 8 }}>
+                  ▸ Hampir selesai... sabar ya ✨
                 </motion.p>
               </div>
             </div>
+            <ChapterMeaning meaning={CHAPTERS[2].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 2: Verifikasi Usil --------
+      // ======== BAB III: Cermin Kejujuran (Quiz) ========
       case 3:
         return (
-          <SceneCard key="s3">
+          <SceneCard mood="calm">
             <div className="text-center space-y-3">
-              <p className="text-3xl">🤔</p>
+              <motion.p
+                className="text-4xl"
+                animate={{ rotateY: [0, 180, 360] }}
+                transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+              >
+                🪞
+              </motion.p>
               <h2 className="text-base font-bold text-amber-700">
                 Verifikasi Dulu
               </h2>
@@ -540,7 +992,7 @@ export default function BirthdayPutri() {
                 Jawab dulu biar aku tau kamu beneran Putri apa bukan:
               </p>
               <p className="text-sm font-semibold text-amber-800">
-                "Putri Almeyda itu menurut dia sendiri gimana?"
+                &ldquo;Putri Almeyda itu menurut dia sendiri gimana?&rdquo;
               </p>
               <div className="space-y-2">
                 {[
@@ -550,44 +1002,55 @@ export default function BirthdayPutri() {
                   { text: 'Pendiem 🤫', resp: 'Iya, tapi diam-diam kayaknya suka aku deh? 🫠' },
                   { text: 'Cuek 🤫', resp: 'Iya, tapi cueknya bikin tambah suka 🫠' },
                 ].map((opt, i) => (
-                  <button
+                  <motion.button
                     key={i}
                     onClick={() => setQuizAnswer(opt.resp)}
-                    className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 
-                               border border-amber-200 rounded-xl text-amber-800 text-xs sm:text-sm 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.12, type: 'spring' }}
+                    className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100
+                               border border-amber-200 rounded-xl text-amber-800 text-xs sm:text-sm
                                font-medium transition-all hover:scale-[1.02] cursor-pointer"
                   >
                     {opt.text}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
               {quizAnswer && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 p-2.5 bg-amber-600 border border-amber-700 rounded-xl"
+                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                  className="mt-2 p-3 bg-amber-600 border border-amber-700 rounded-xl"
                 >
                   <p className="text-xs sm:text-sm text-white font-medium">{quizAnswer}</p>
                 </motion.div>
               )}
               {quizAnswer && <NextBtn onClick={next} />}
             </div>
+            <ChapterMeaning meaning={CHAPTERS[3].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 3: Roast Lucu --------
+      // ======== BAB IV: Api Kebenaran (Roast) ========
       case 4:
         return (
-          <SceneCard key="s4">
+          <SceneCard mood="warm">
             <div className="text-center space-y-2 sm:space-y-3">
-              <p className="text-3xl">🔥</p>
+              <motion.p
+                className="text-4xl"
+                animate={{ scale: [1, 1.2, 1], filter: ['brightness(1)', 'brightness(1.5)', 'brightness(1)'] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              >
+                🔥
+              </motion.p>
               <h2 className="text-base font-bold text-amber-700">
                 Fakta Tentang Putri Almeyda
               </h2>
               <p className="text-[11px] text-amber-500 italic">
                 *jangan baper ya, ini bentuk perhatian 😌*
               </p>
-              <div className="max-h-[45vh] sm:max-h-none overflow-y-auto space-y-1.5 sm:space-y-3 text-left pr-1 no-scrollbar">
+              <div className="max-h-[45vh] sm:max-h-none overflow-y-auto space-y-2 sm:space-y-3 text-left pr-1 no-scrollbar">
                 {[
                   '🤫 Pendiem banget. Kadang aku bingung, ini lagi oke atau lagi ngambek.',
                   '😶 Kalau ngambek? Diem. Gak ngomong. Tapi auranya terasa se-ruangan.',
@@ -597,31 +1060,44 @@ export default function BirthdayPutri() {
                   '🍕 Ditanya "mau makan apa?" — "apa aja ikut". si paling ngikut dan aura gak enakanya tebel banget.',
                   '🫠 Tipe yang bikin orang mikir "dia peduli gak sih?" — ternyata peduli banget, cuma gak bisa nunjukin.',
                 ].map((roast, i) => (
-                  <motion.p
+                  <motion.div
                     key={i}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: i % 2 === 0 ? -30 : 30 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.3 }}
-                    className="text-[11px] sm:text-sm text-amber-800 bg-amber-50 p-2 sm:p-3 rounded-xl border border-amber-100"
+                    transition={{ delay: 0.2 + i * 0.25, type: 'spring', stiffness: 120 }}
                   >
-                    {roast}
-                  </motion.p>
+                    <p className="text-[11px] sm:text-sm text-amber-800 bg-amber-50 p-2.5 sm:p-3 rounded-xl border border-amber-100">
+                      {roast}
+                    </p>
+                  </motion.div>
                 ))}
               </div>
-              <p className="text-[11px] text-amber-500">
+              <motion.p
+                className="text-[11px] text-amber-500"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2.5 }}
+              >
                 Tapi justru itu semua yang bikin <span className="font-bold text-amber-700">Putri Almeyda</span> gak bisa dilupain 🫠
-              </p>
+              </motion.p>
               <NextBtn onClick={next} />
             </div>
+            <ChapterMeaning meaning={CHAPTERS[4].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 4: Mini Game Tombol Kabur --------
+      // ======== BAB V: Arena Tantangan (Mini Game) ========
       case 5:
         return (
-          <SceneCard key="s5">
+          <SceneCard mood="fun">
             <div className="text-center space-y-2 sm:space-y-3">
-              <p className="text-3xl">🎮</p>
+              <motion.p
+                className="text-4xl"
+                animate={{ rotate: [0, -10, 10, -10, 0] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              >
+                🎮
+              </motion.p>
               <h2 className="text-base font-bold text-amber-700">
                 Mini Game: Tangkap Hadiahnya!
               </h2>
@@ -634,19 +1110,26 @@ export default function BirthdayPutri() {
               />
               {giftCaught && <NextBtn onClick={next} />}
             </div>
+            <ChapterMeaning meaning={CHAPTERS[5].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 5: Gombalan Coding --------
+      // ======== BAB VI: Kode Takdir (Coding Jokes) ========
       case 6:
         return (
-          <SceneCard key="s6">
+          <SceneCard mood="code">
             <div className="text-center space-y-2 sm:space-y-3">
-              <p className="text-3xl">💻🫠</p>
-              <h2 className="text-base font-bold text-amber-700">
+              <motion.p
+                className="text-4xl"
+                animate={{ y: [0, -5, 0] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                💻🫠
+              </motion.p>
+              <h2 className="text-base font-bold text-amber-400">
                 Kode Receh buat Putri
               </h2>
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-2.5 sm:space-y-3">
                 {[
                   { code: 'const putri = "irreplaceable"', desc: 'Kamu itu const — mau di-overwrite juga gak bisa ✋' },
                   { code: 'while(true) { kepikiran(putri); }', desc: 'Infinite loop. Gak ada break-nya. Gak ngerti kenapa 🔁' },
@@ -656,27 +1139,39 @@ export default function BirthdayPutri() {
                 ].map((g, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 15 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.35 }}
-                    className="bg-gray-900 rounded-xl p-2.5 sm:p-3 text-left"
+                    transition={{ delay: 0.3 + i * 0.3, type: 'spring', stiffness: 120 }}
+                    className="bg-black/60 backdrop-blur rounded-xl p-3 sm:p-3.5 text-left border border-green-500/10"
                   >
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <div className="w-2 h-2 rounded-full bg-red-400/80" />
+                      <div className="w-2 h-2 rounded-full bg-yellow-400/80" />
+                      <div className="w-2 h-2 rounded-full bg-green-400/80" />
+                    </div>
                     <code className="text-green-400 text-[11px] sm:text-xs font-mono">{g.code}</code>
-                    <p className="text-amber-400 text-[11px] sm:text-xs mt-1">{g.desc}</p>
+                    <p className="text-amber-400/80 text-[11px] sm:text-xs mt-1.5">{g.desc}</p>
                   </motion.div>
                 ))}
               </div>
               <NextBtn onClick={next} />
             </div>
+            <ChapterMeaning meaning={CHAPTERS[6].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 6: Pertanyaan Jokes Interaktif --------
+      // ======== BAB VII: Teka-Teki Hati (Quiz Absurd) ========
       case 7:
         return (
-          <SceneCard key="s7">
+          <SceneCard mood="fun">
             <div className="text-center space-y-3">
-              <p className="text-3xl">😂</p>
+              <motion.p
+                className="text-4xl"
+                animate={{ rotate: [0, 15, -15, 0] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                🧩
+              </motion.p>
               <h2 className="text-base font-bold text-amber-700">
                 Quiz Absurd Spesial
               </h2>
@@ -690,32 +1185,37 @@ export default function BirthdayPutri() {
                   { text: 'Dua-duanya bikin aku buka HP tiap 5 menit 💀', resp: '✅ BENAR! Aku benci betapa akuratnya ini 🏆' },
                   { text: 'Notif bisa di-mute, Putri gak bisa 🔇', resp: '🔥 FACTS. Mau di-mute juga tetep kepikiran 💀' },
                 ].map((opt, i) => (
-                  <button
+                  <motion.button
                     key={i}
                     onClick={() => setJokeAnswer(opt.resp)}
-                    className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 
-                               border border-amber-200 rounded-xl text-amber-800 text-xs sm:text-sm 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + i * 0.12, type: 'spring' }}
+                    className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100
+                               border border-amber-200 rounded-xl text-amber-800 text-xs sm:text-sm
                                font-medium transition-all hover:scale-[1.02] cursor-pointer"
                   >
                     {opt.text}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
               {jokeAnswer && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="p-2.5 bg-amber-700 border border-amber-800 rounded-xl"
+                  initial={{ opacity: 0, scale: 0.8, rotateX: -20 }}
+                  animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                  className="p-3 bg-amber-700 border border-amber-800 rounded-xl"
                 >
                   <p className="text-xs sm:text-sm text-white font-medium">{jokeAnswer}</p>
                 </motion.div>
               )}
               {jokeAnswer && <NextBtn onClick={next} />}
             </div>
+            <ChapterMeaning meaning={CHAPTERS[7].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 7: Foto Kenangan --------
+      // ======== BAB VIII: Lorong Kenangan (Photo Gallery) ========
       case 8: {
         const photos = [
           { src: '/foto1.jpg', caption: 'Ini muka yang bikin aku susah fokus. Gak nyadar kan? 🫠' },
@@ -723,38 +1223,49 @@ export default function BirthdayPutri() {
           { src: '/foto3.jpg', caption: 'semoga bisa nyelip ada "akunya" di antara foto keluarga ini🌸' },
         ]
         const photo = photos[photoIdx]
-        const allSeen = photoIdx >= photos.length - 1
         return (
-          <SceneCard key="s8">
+          <SceneCard mood="nostalgic">
             <div className="text-center space-y-3">
-              <p className="text-3xl">📸</p>
+              <motion.p
+                className="text-4xl"
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                📸
+              </motion.p>
               <h2 className="text-base font-bold text-amber-700">
                 Galeri (yang Putri gak tau aku bakal simpan terus) 📂
               </h2>
+
+              {/* Polaroid-style photo frame */}
               <motion.div
                 key={photoIdx}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-                className="relative"
+                initial={{ opacity: 0, rotate: -3, scale: 0.9 }}
+                animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                transition={{ duration: 0.5, type: 'spring' }}
+                className="relative bg-white rounded-lg p-2 pb-12 shadow-lg mx-auto max-w-[280px] sm:max-w-none"
+                style={{ transform: `rotate(${photoIdx % 2 === 0 ? -1 : 1}deg)` }}
               >
                 <img
                   src={photo.src}
                   alt={`Kenangan ${photoIdx + 1}`}
-                  className="w-full h-40 sm:h-56 object-cover rounded-2xl border-4 border-amber-200 shadow-md"
+                  className="w-full h-40 sm:h-56 object-cover rounded"
                   onError={(e) => {
                     e.target.style.display = 'none'
                     e.target.nextElementSibling.style.display = 'flex'
                   }}
                 />
                 <div
-                  className="hidden w-full h-40 sm:h-56 bg-gradient-to-br from-amber-100 to-amber-100 
-                              rounded-2xl border-4 border-amber-200 shadow-md items-center justify-center"
+                  className="hidden w-full h-40 sm:h-56 bg-gradient-to-br from-amber-100 to-amber-50
+                              rounded items-center justify-center"
                 >
                   <p className="text-amber-500 text-xs sm:text-sm">📷 Taruh foto di /public/foto{photoIdx + 1}.jpg</p>
                 </div>
-                <p className="mt-1.5 text-xs sm:text-sm text-amber-600 italic">{photo.caption}</p>
+                <p className="absolute bottom-3 left-0 right-0 text-xs text-amber-600 italic px-3 text-center">
+                  {photo.caption}
+                </p>
               </motion.div>
+
               <div className="flex justify-center gap-2">
                 {photos.map((_, i) => (
                   <button
@@ -766,100 +1277,144 @@ export default function BirthdayPutri() {
                   />
                 ))}
               </div>
+
               {photoIdx < photos.length - 1 ? (
-                <button
+                <NextBtn
                   onClick={() => setPhotoIdx((p) => p + 1)}
-                  className="mt-4 sm:mt-6 w-full py-3 bg-gradient-to-r from-amber-500 to-amber-700 
-                             text-white rounded-2xl font-semibold shadow-md hover:shadow-lg 
-                             hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
-                >
-                  Foto berikutnya ({photoIdx + 1}/{photos.length}) →
-                </button>
+                  label={`Foto berikutnya (${photoIdx + 1}/${photos.length}) →`}
+                />
               ) : (
                 <NextBtn onClick={next} label="Udah semua, lanjut →" />
               )}
             </div>
+            <ChapterMeaning meaning={CHAPTERS[8].meaning} />
           </SceneCard>
         )
       }
 
-      // -------- SCENE 8: Hangat Personal --------
+      // ======== BAB IX: Surat Tak Terkirim (Warm Message) ========
       case 9:
         return (
-          <SceneCard key="s9">
+          <SceneCard mood="emotional">
             <div className="text-center space-y-3">
-              <p className="text-4xl animate-float">🫂</p>
-              <h2 className="text-lg font-bold text-amber-700 font-[Dancing_Script]">
-                Hei, Putri.
-              </h2>
-              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2 sm:space-y-3 text-left">
-                <p>
-                  Aku tau kamu orangnya pendiem. Gak banyak cerita.
-                  Lebih sering dengerin daripada ngomong.
-                </p>
-                <p>
-                  Tapi justru itu yang bikin aku ngerasa... kamu beda.
-                  Kamu tipe yang peduli lewat hal kecil, yang gak perlu bilang apa-apa
-                  tapi kehadirannya kerasa.
-                </p>
-                <p>
-                  Kamu mungkin gak sadar, tapi orang kayak kamu itu <span className="font-bold text-amber-800">langka</span>.
-                  Yang diem, tapi bikin orang di sekitarnya ngerasa aman.
-                </p>
-                <p className="text-amber-800 font-semibold text-center text-base">
-                  Kamu penting. Kamu berarti. Lebih dari yang kamu tau. 🤍
-                </p>
+              {/* Envelope opening animation */}
+              <div className="relative w-20 h-16 mx-auto mb-2">
+                <motion.div
+                  className="absolute bottom-0 w-20 h-12 bg-amber-100 rounded-b-lg border-2 border-amber-300"
+                />
+                <motion.div
+                  className="absolute top-0 w-20 h-10 bg-amber-200 border-2 border-amber-300 origin-bottom"
+                  style={{ clipPath: 'polygon(0 100%, 50% 30%, 100% 100%)' }}
+                  initial={{ rotateX: 0 }}
+                  animate={{ rotateX: 180 }}
+                  transition={{ delay: 0.5, duration: 0.8, ease: 'easeOut' }}
+                />
+                <motion.p
+                  className="absolute inset-0 flex items-center justify-center text-3xl"
+                  initial={{ y: 0 }}
+                  animate={{ y: -20, scale: 1.3 }}
+                  transition={{ delay: 1.2, duration: 0.5 }}
+                >
+                  💌
+                </motion.p>
               </div>
-              <NextBtn onClick={next} />
+
+              <motion.h2
+                className="text-lg font-bold text-amber-700 font-[Dancing_Script]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.5 }}
+              >
+                Hei, Putri.
+              </motion.h2>
+
+              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2.5 sm:space-y-3 text-left">
+                {[
+                  'Aku tau kamu orangnya pendiem. Gak banyak cerita. Lebih sering dengerin daripada ngomong.',
+                  'Tapi justru itu yang bikin aku ngerasa... kamu beda. Kamu tipe yang peduli lewat hal kecil, yang gak perlu bilang apa-apa tapi kehadirannya kerasa.',
+                  <>Kamu mungkin gak sadar, tapi orang kayak kamu itu <span className="font-bold text-amber-800">langka</span>. Yang diem, tapi bikin orang di sekitarnya ngerasa aman.</>,
+                ].map((text, i) => (
+                  <motion.p
+                    key={i}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 2 + i * 0.6 }}
+                  >
+                    {text}
+                  </motion.p>
+                ))}
+                <motion.p
+                  className="text-amber-800 font-semibold text-center text-base pt-1"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 4 }}
+                >
+                  Kamu penting. Kamu berarti. Lebih dari yang kamu tau. 🤍
+                </motion.p>
+              </div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 4.5 }}
+              >
+                <NextBtn onClick={next} />
+              </motion.div>
             </div>
+            <ChapterMeaning meaning={CHAPTERS[9].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 9: Emosional - Bertambah Umur --------
+      // ======== BAB X: Waktu yang Berjalan (Growing Up) ========
       case 10:
         return (
-          <SceneCard key="s10">
+          <SceneCard mood="emotional">
             <div className="text-center space-y-3">
-              <p className="text-4xl">🕰️</p>
+              <motion.p
+                className="text-4xl"
+                animate={{ rotate: [0, 360] }}
+                transition={{ repeat: Infinity, duration: 8, ease: 'linear' }}
+              >
+                🕰️
+              </motion.p>
               <h2 className="text-base font-bold text-amber-700">
                 Soal Bertambah Umur...
               </h2>
-              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2 sm:space-y-3 text-left">
-                <p>
-                  Aku tau bertambah umur itu kadang bikin mikir banyak.
-                  Tanggung jawab nambah, ekspektasi orang makin tinggi,
-                  dan waktu rasanya makin gak bisa dipelanin.
-                </p>
-                <p>
-                  Tapi coba deh lihat ke belakang sebentar.
-                  Semua yang udah kamu lewatin — yang berat, yang bikin nangis,
-                  yang bikin kamu hampir nyerah — kamu berhasil melewatinya.
-                  Semua. Tanpa terkecuali.
-                </p>
-                <p>
-                  Setiap luka yang pelan-pelan sembuh,
-                  setiap malam yang akhirnya berubah jadi pagi,
-                  setiap senyum yang awalnya dipaksain tapi lama-lama jadi tulus —
-                  itu semua bukti bahwa kamu jauh lebih kuat dari yang kamu akui.
-                </p>
+              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2.5 sm:space-y-3 text-left">
+                {[
+                  'Aku tau bertambah umur itu kadang bikin mikir banyak. Tanggung jawab nambah, ekspektasi orang makin tinggi, dan waktu rasanya makin gak bisa dipelanin.',
+                  'Tapi coba deh lihat ke belakang sebentar. Semua yang udah kamu lewatin — yang berat, yang bikin nangis, yang bikin kamu hampir nyerah — kamu berhasil melewatinya. Semua. Tanpa terkecuali.',
+                  'Setiap luka yang pelan-pelan sembuh, setiap malam yang akhirnya berubah jadi pagi, setiap senyum yang awalnya dipaksain tapi lama-lama jadi tulus — itu semua bukti bahwa kamu jauh lebih kuat dari yang kamu akui.',
+                ].map((text, i) => (
+                  <motion.p
+                    key={i}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + i * 0.7 }}
+                  >
+                    {text}
+                  </motion.p>
+                ))}
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 1 }}
-                  className="text-amber-800 font-semibold text-center"
+                  transition={{ delay: 3 }}
+                  className="text-amber-800 font-semibold text-center pt-1"
                 >
                   Jadi gak perlu takut tumbuh. Aku percaya sama kamu. 🤍
                 </motion.p>
               </div>
-              <NextBtn onClick={next} />
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.5 }}>
+                <NextBtn onClick={next} />
+              </motion.div>
             </div>
+            <ChapterMeaning meaning={CHAPTERS[10].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 10: Jujur Halus --------
+      // ======== BAB XI: Kata yang Tertahan (Honest Feelings) ========
       case 11:
         return (
-          <SceneCard key="s11">
+          <SceneCard mood="emotional">
             <div className="text-center space-y-3">
               <motion.p
                 className="text-4xl"
@@ -868,55 +1423,81 @@ export default function BirthdayPutri() {
               >
                 🫠
               </motion.p>
-              <h2 className="text-lg font-bold text-amber-700 font-[Dancing_Script]">
+              <motion.h2
+                className="text-lg font-bold text-amber-700 font-[Dancing_Script]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
                 Ini agak jujur. Maaf.
-              </h2>
-              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2 sm:space-y-3">
-                <p>
-                  Aku gak tau harus bilang ini kapan, jadi ya sekarang aja.
-                </p>
-                <p>
-                  Kamu itu pendiem. Jarang cerita. Suka diem kalau lagi ngerasa sesuatu.
-                  Dan jujur, kadang aku bingung — kamu lagi oke atau lagi ngambek.
-                </p>
-                <p>
-                  Tapi anehnya, justru karena kamu kayak gitu,
-                  aku malah jadi lebih pengen ngerti kamu.
-                  Kamu bikin aku peduli lebih dari yang aku rencanain,
-                  dan kehadiran kamu itu bikin hal-hal yang biasa
-                  jadi <span className="font-bold text-amber-800">terasa beda</span>.
-                </p>
-                <p className="text-base text-amber-800 font-semibold">
-                  "Kamu itu ketenangan yang gak aku cari,
+              </motion.h2>
+              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2.5 sm:space-y-3">
+                {[
+                  'Aku gak tau harus bilang ini kapan, jadi ya sekarang aja.',
+                  'Kamu itu pendiem. Jarang cerita. Suka diem kalau lagi ngerasa sesuatu. Dan jujur, kadang aku bingung — kamu lagi oke atau lagi ngambek.',
+                  <>Tapi anehnya, justru karena kamu kayak gitu, aku malah jadi lebih pengen ngerti kamu. Kamu bikin aku peduli lebih dari yang aku rencanain, dan kehadiran kamu itu bikin hal-hal yang biasa jadi <span className="font-bold text-amber-800">terasa beda</span>.</>,
+                ].map((text, i) => (
+                  <motion.p
+                    key={i}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 + i * 0.8 }}
+                  >
+                    {text}
+                  </motion.p>
+                ))}
+                <motion.p
+                  className="text-base text-amber-800 font-semibold pt-2"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 3.5 }}
+                >
+                  &ldquo;Kamu itu ketenangan yang gak aku cari,
                   <br />
-                  tapi ternyata aku butuhkan." 🫠
-                </p>
+                  tapi ternyata aku butuhkan.&rdquo; 🫠
+                </motion.p>
               </div>
-              <NextBtn onClick={next} />
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 4 }}>
+                <NextBtn onClick={next} />
+              </motion.div>
             </div>
+            <ChapterMeaning meaning={CHAPTERS[11].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 11: Voice Message --------
+      // ======== BAB XII: Bisikan Rahasia (Voice Message) ========
       case 12:
         return (
-          <SceneCard key="s12">
+          <SceneCard mood="emotional">
             <div className="text-center space-y-3 sm:space-y-4">
-              <motion.p
-                className="text-4xl"
-                animate={{ scale: [1, 1.15, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-              >
-                🎧
-              </motion.p>
+              {/* Audio waveform visual */}
+              <div className="flex items-center justify-center gap-1 h-16">
+                {Array.from({ length: 20 }, (_, i) => (
+                  <motion.div
+                    key={i}
+                    className="w-1 bg-amber-400 rounded-full"
+                    animate={{
+                      height: [8, 15 + Math.random() * 30, 8],
+                    }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 0.8 + Math.random() * 0.5,
+                      delay: i * 0.05,
+                      ease: 'easeInOut',
+                    }}
+                  />
+                ))}
+              </div>
+
               <h2 className="text-lg font-bold text-amber-700 font-[Dancing_Script]">
                 Voice Note Rahasia
               </h2>
               <p className="text-xs sm:text-sm text-amber-600">
                 Ada sesuatu yang gak bisa diketik. Jadi aku rekamlah. Dengerin ya.
               </p>
+
               <audio ref={audioRef} src="/voice.mp3" preload="auto" />
-              <button
+              <motion.button
                 onClick={() => {
                   if (audioRef.current) {
                     audioRef.current.paused
@@ -924,77 +1505,118 @@ export default function BirthdayPutri() {
                       : audioRef.current.pause()
                   }
                 }}
-                className="mx-auto flex items-center gap-2 px-6 py-3 bg-gradient-to-r 
-                           from-amber-500 to-amber-700 text-white rounded-full font-semibold 
-                           shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 
-                           transition-all cursor-pointer"
+                className="mx-auto flex items-center gap-2 px-6 py-3 bg-gradient-to-r
+                           from-amber-500 to-amber-700 text-white rounded-full font-semibold
+                           shadow-lg cursor-pointer relative overflow-hidden"
+                whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(217,119,6,0.4)' }}
+                whileTap={{ scale: 0.95 }}
               >
-                <span className="text-xl">▶️</span> Putar Pesan Rahasia
-              </button>
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                  animate={{ x: ['-100%', '200%'] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <span className="relative z-10 text-xl">▶️</span>
+                <span className="relative z-10">Putar Pesan Rahasia</span>
+              </motion.button>
               <p className="text-xs text-amber-500 italic">
                 *Taruh file voice.mp3 di folder /public*
               </p>
               <NextBtn onClick={next} />
             </div>
+            <ChapterMeaning meaning={CHAPTERS[12].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 12: Ucapan Ulang Tahun --------
+      // ======== BAB XIII: Hari Istimewa (Birthday Wish) ========
       case 13:
         return (
-          <SceneCard key="s13">
+          <SceneCard mood="celebration">
             <div className="text-center space-y-3">
-              <motion.p
-                className="text-5xl"
-                animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
-                transition={{ repeat: Infinity, duration: 3 }}
-              >
-                🎂
-              </motion.p>
-              <h2 className="text-xl font-bold text-amber-800 font-[Dancing_Script]">
-                Barakallah Fi Umrik, Putri
-              </h2>
-              <h3 className="text-lg font-bold text-amber-700">
-                Putri Almeyda 🎉
-              </h3>
-              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2">
-                <p>
-                  Di umur yang baru ini, aku doain kamu dapet kebahagiaan
-                  yang bahkan kamu sendiri gak nyangka bakal dateng.
-                </p>
-                <p>
-                  Semua mimpi yang kamu simpen diam-diam,
-                  yang gak pernah kamu ceritain ke siapapun —
-                  semoga satu per satu mulai jadi nyata.
-                </p>
-                <p>
-                  Semoga hati kamu tenang, langkah kamu dijaga,
-                  dan kamu dikelilingi orang-orang yang beneran tulus.
-                </p>
-                <p className="text-xs text-amber-500 italic">
-                  (termasuk aku. yang diem-diem aja. tapi tulus. percaya deh. 🫠)
-                </p>
+              {/* Animated cake with candle glow */}
+              <div className="relative inline-block">
+                <motion.p
+                  className="text-6xl"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                >
+                  🎂
+                </motion.p>
+                {/* Candle glow */}
+                <motion.div
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full"
+                  style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.4), transparent)' }}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0.8, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                />
               </div>
+
+              <motion.h2
+                className="text-xl font-bold text-amber-800 font-[Dancing_Script]"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                Barakallah Fi Umrik, Putri
+              </motion.h2>
+              <motion.h3
+                className="text-lg font-bold text-amber-700"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+              >
+                Putri Almeyda 🎉
+              </motion.h3>
+
+              <div className="text-xs sm:text-sm text-amber-800 leading-relaxed space-y-2">
+                {[
+                  'Di umur yang baru ini, aku doain kamu dapet kebahagiaan yang bahkan kamu sendiri gak nyangka bakal dateng.',
+                  'Semua mimpi yang kamu simpen diam-diam, yang gak pernah kamu ceritain ke siapapun — semoga satu per satu mulai jadi nyata.',
+                  'Semoga hati kamu tenang, langkah kamu dijaga, dan kamu dikelilingi orang-orang yang beneran tulus.',
+                ].map((text, i) => (
+                  <motion.p
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1 + i * 0.5 }}
+                  >
+                    {text}
+                  </motion.p>
+                ))}
+                <motion.p
+                  className="text-xs text-amber-500 italic"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 2.8 }}
+                >
+                  (termasuk aku. yang diem-diem aja. tapi tulus. percaya deh. 🫠)
+                </motion.p>
+              </div>
+
               <div className="flex justify-center gap-2 text-2xl py-2">
                 {['🎈', '🎁', '🎊', '🎀', '🎉'].map((e, i) => (
                   <motion.span
                     key={i}
-                    animate={{ y: [0, -10, 0] }}
+                    animate={{ y: [0, -12, 0] }}
                     transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.2 }}
                   >
                     {e}
                   </motion.span>
                 ))}
               </div>
-              <NextBtn onClick={next} label="Terakhir... 🤲" />
+
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.5 }}>
+                <NextBtn onClick={next} label="Terakhir... 🤲" />
+              </motion.div>
             </div>
+            <ChapterMeaning meaning={CHAPTERS[13].meaning} />
           </SceneCard>
         )
 
-      // -------- SCENE 14: Prank Gift Box --------
-      case 14: {
+      // ======== BAB XIV: Kejutan Terakhir (Prank Gift) ========
+      case 14:
         return (
-          <SceneCard key="s14">
+          <SceneCard mood="fun">
             <div className="text-center space-y-3">
               {!prankOpened ? (
                 <>
@@ -1011,39 +1633,40 @@ export default function BirthdayPutri() {
                   <p className="text-xs sm:text-sm text-amber-600">
                     Ada kado spesial buat kamu. Siap?
                   </p>
+
                   {/* Gift Box */}
-                  <div className="relative mx-auto w-40 h-40 sm:w-48 sm:h-48 cursor-pointer"
-                       onClick={() => setPrankOpened(true)}>
-                    {/* Box body */}
+                  <div
+                    className="relative mx-auto w-40 h-40 sm:w-48 sm:h-48 cursor-pointer"
+                    onClick={() => setPrankOpened(true)}
+                  >
                     <motion.div
                       className="absolute bottom-0 w-full h-28 sm:h-32 bg-gradient-to-b from-amber-400 to-amber-600 rounded-lg shadow-lg border-2 border-amber-700"
                       animate={{ scale: [1, 1.02, 1] }}
                       transition={{ repeat: Infinity, duration: 1.2 }}
                     >
-                      {/* Ribbon vertical */}
                       <div className="absolute left-1/2 -translate-x-1/2 w-4 h-full bg-red-500/80" />
-                      {/* Ribbon horizontal */}
                       <div className="absolute top-1/2 -translate-y-1/2 w-full h-4 bg-red-500/80" />
                     </motion.div>
-                    {/* Box lid */}
                     <motion.div
                       className="absolute top-4 sm:top-2 w-full h-10 bg-gradient-to-b from-amber-300 to-amber-500 rounded-t-lg border-2 border-amber-700 shadow-md"
                       animate={{ y: [0, -4, 0], rotate: [0, 1, -1, 0] }}
                       transition={{ repeat: Infinity, duration: 1.5 }}
                     >
-                      {/* Bow */}
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">🎀</div>
                     </motion.div>
                   </div>
-                  <p className="text-[11px] text-amber-500 animate-pulse">Tap kotak untuk buka →</p>
+                  <motion.p
+                    className="text-[11px] text-amber-500"
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  >
+                    Tap kotak untuk buka →
+                  </motion.p>
                 </>
               ) : (
                 <>
-                  {/* Box opens - lid flies off */}
-                  <motion.div
-                    className="relative mx-auto w-40 h-44 sm:w-48 sm:h-52"
-                  >
-                    {/* Lid flying away */}
+                  <motion.div className="relative mx-auto w-40 h-44 sm:w-48 sm:h-52">
+                    {/* Lid flying off */}
                     <motion.div
                       className="absolute top-0 w-full h-10 bg-gradient-to-b from-amber-300 to-amber-500 rounded-t-lg border-2 border-amber-700"
                       initial={{ y: 0, rotate: 0, opacity: 1 }}
@@ -1053,13 +1676,12 @@ export default function BirthdayPutri() {
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">🎀</div>
                     </motion.div>
 
-                    {/* Box body stays */}
                     <div className="absolute bottom-0 w-full h-28 sm:h-32 bg-gradient-to-b from-amber-400 to-amber-600 rounded-lg shadow-lg border-2 border-amber-700 overflow-hidden">
                       <div className="absolute left-1/2 -translate-x-1/2 w-4 h-full bg-red-500/80" />
                       <div className="absolute top-1/2 -translate-y-1/2 w-full h-4 bg-red-500/80" />
                     </div>
 
-                    {/* Putri photo popping out */}
+                    {/* Putri photo pops out */}
                     <motion.img
                       src="/putri-prank.png"
                       alt="SURPRISE!"
@@ -1074,8 +1696,8 @@ export default function BirthdayPutri() {
                       onError={(e) => { e.target.style.display = 'none' }}
                     />
 
-                    {/* Confetti particles */}
-                    {[...Array(8)].map((_, i) => (
+                    {/* Confetti burst */}
+                    {[...Array(10)].map((_, i) => (
                       <motion.span
                         key={i}
                         className="absolute text-lg"
@@ -1083,18 +1705,17 @@ export default function BirthdayPutri() {
                         initial={{ y: 40, x: 0, opacity: 1 }}
                         animate={{
                           y: -60 - Math.random() * 60,
-                          x: (Math.random() - 0.5) * 140,
+                          x: (Math.random() - 0.5) * 160,
                           opacity: 0,
                           rotate: Math.random() * 360,
                         }}
-                        transition={{ delay: 0.3 + i * 0.08, duration: 1.2, ease: 'easeOut' }}
+                        transition={{ delay: 0.3 + i * 0.06, duration: 1.2, ease: 'easeOut' }}
                       >
-                        {['✨', '🎊', '⭐', '🎉', '💫', '🌟', '🎀', '🤎'][i]}
+                        {['✨', '🎊', '⭐', '🎉', '💫', '🌟', '🎀', '🤎', '🎈', '🎁'][i]}
                       </motion.span>
                     ))}
                   </motion.div>
 
-                  {/* PRANK text */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -1103,7 +1724,6 @@ export default function BirthdayPutri() {
                     <p className="text-2xl font-bold text-amber-700">😂 KENA PRANK! 😂</p>
                   </motion.div>
 
-                  {/* Apology + real gift */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1132,19 +1752,19 @@ export default function BirthdayPutri() {
                 </>
               )}
             </div>
+            <ChapterMeaning meaning={CHAPTERS[14].meaning} />
           </SceneCard>
         )
-      }
 
-      // -------- SCENE 15: Ending Doa + Confetti --------
+      // ======== BAB XV: Doa & Harapan (Final Prayer + Confetti) ========
       case 15:
         return (
-          <SceneCard key="s14">
+          <SceneCard mood="spiritual">
             <div className="text-center space-y-3">
               <motion.p
                 className="text-4xl"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 200 }}
               >
                 🤲
@@ -1152,7 +1772,13 @@ export default function BirthdayPutri() {
               <h2 className="text-lg font-bold text-amber-800 font-[Dancing_Script]">
                 Doa buat Putri Almeyda
               </h2>
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 sm:p-5 text-xs sm:text-sm text-amber-900 leading-relaxed space-y-2 sm:space-y-3">
+
+              <motion.div
+                className="bg-amber-50 border border-amber-200 rounded-2xl p-3 sm:p-5 text-xs sm:text-sm text-amber-900 leading-relaxed space-y-2 sm:space-y-3"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
                 <p className="font-semibold text-amber-800 text-base">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
                 <p>
                   Ya Allah, di hari istimewa hamba-Mu <span className="font-bold text-amber-800">Putri Almeyda</span>,
@@ -1171,14 +1797,20 @@ export default function BirthdayPutri() {
                   Berikanlah dia kebahagiaan yang nyata — di dunia dan akhirat.
                   Lindungilah dia, keluarganya, dan semua orang yang ada di hidupnya.
                 </p>
-                <p className="font-bold text-amber-800">
-                  Aamiin Ya Rabbal 'Aalamiin 🤍
-                </p>
-              </div>
+                <motion.p
+                  className="font-bold text-amber-800"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 2 }}
+                >
+                  Aamiin Ya Rabbal &apos;Aalamiin 🤍
+                </motion.p>
+              </motion.div>
+
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
+                transition={{ delay: 2.5 }}
                 className="space-y-2"
               >
                 <p className="text-sm text-amber-700 font-semibold">
@@ -1188,6 +1820,7 @@ export default function BirthdayPutri() {
                   Website ini aku bikin khusus buat kamu. Selamat ulang tahun, Putri 🎂✨
                 </p>
               </motion.div>
+
               <div className="flex justify-center gap-3 text-3xl pt-2">
                 {['🎉', '🎊', '✨', '🎂', '💖'].map((e, i) => (
                   <motion.span
@@ -1199,7 +1832,19 @@ export default function BirthdayPutri() {
                   </motion.span>
                 ))}
               </div>
+
+              {/* Credits */}
+              <motion.div
+                className="pt-4 border-t border-amber-200/30 space-y-1"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 3.5 }}
+              >
+                <p className="text-[10px] text-amber-400/40">Dibuat dengan penuh perasaan 🤍</p>
+                <p className="text-[10px] text-amber-400/30">— untuk Putri Almeyda, selamanya —</p>
+              </motion.div>
             </div>
+            <ChapterMeaning meaning={CHAPTERS[15].meaning} />
           </SceneCard>
         )
 
@@ -1208,16 +1853,21 @@ export default function BirthdayPutri() {
     }
   }
 
+  // =============== MAIN RETURN ===============
   return (
-    <div className="min-h-screen min-h-dvh bg-gradient-to-br from-orange-50 via-amber-50 to-stone-100 
-                    flex items-start justify-center px-3 sm:px-4 pt-10 pb-8
-                    relative overflow-x-hidden">
+    <div
+      className="min-h-screen min-h-dvh relative overflow-x-hidden"
+      style={{ background: bgGradient, transition: 'background 1s ease' }}
+    >
       {/* Background music */}
       <audio ref={bgm1Ref} src="/bgm1.mp3" loop preload="auto" />
       <audio ref={bgm2Ref} src="/bgm2.mp3" loop preload="auto" />
 
+      {/* Dynamic particles */}
+      {chapter >= 0 && !showIntro && <DynamicParticles mood={currentMood} />}
+
       {/* Mute toggle */}
-      {scene > 0 && (
+      {chapter >= 0 && !showIntro && (
         <button
           onClick={() => setMuted((m) => !m)}
           className="fixed top-2 right-3 z-50 w-9 h-9 flex items-center justify-center
@@ -1229,18 +1879,53 @@ export default function BirthdayPutri() {
         </button>
       )}
 
-      {/* Background hearts */}
-      <FloatingHearts />
+      {/* Journey indicator */}
+      {chapter >= 0 && !showIntro && (
+        <JourneyIndicator
+          current={chapter}
+          total={CHAPTERS.length}
+          chapter={currentChapter}
+          onOpenMap={() => setShowMap(true)}
+        />
+      )}
 
-      {/* Progress bar */}
-      <ProgressBar current={scene} total={TOTAL_SCENES} />
-
-      {/* Scene content */}
-      <div className="w-full">
-        <AnimatePresence mode="wait">
-          {renderScene()}
-        </AnimatePresence>
+      {/* Main content */}
+      <div className="w-full flex items-start justify-center px-3 sm:px-4 pt-12 pb-8">
+        <div className="w-full">
+          <AnimatePresence mode="wait">
+            {chapter === -1 ? (
+              <TitleCard key="title" onStart={startFromTitle} />
+            ) : showIntro ? (
+              <ChapterIntro
+                key={`intro-${chapter}`}
+                chapter={currentChapter}
+                onComplete={completeIntro}
+              />
+            ) : (
+              <motion.div
+                key={`scene-${chapter}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                {renderScene()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
+
+      {/* Journey map overlay */}
+      <AnimatePresence>
+        {showMap && (
+          <JourneyMap
+            current={chapter}
+            chapters={CHAPTERS}
+            onClose={() => setShowMap(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
