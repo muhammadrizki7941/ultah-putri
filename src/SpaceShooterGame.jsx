@@ -16,6 +16,16 @@ const ENEMY_MESSAGES = [
   { emoji: '👽', msg: 'Putri layak dapetin yang terbaik — bukan sisa 💎' },
   { emoji: '🛸', msg: 'Satu lagi! Kamu emang jago — di game dan di kehidupan 🏆' },
   { emoji: '👾', msg: 'Ahh, Putri .. Putri, kenapa bikin aku candu si 🌟' },
+  { emoji: '👽', msg: 'Kamu tuh kayak kuota — habis dicari, ada malah dianggurin 😭' },
+  { emoji: '🛸', msg: 'Putri kalau senyum? Masyaallah. Auto lupa password semua akun 🫠' },
+  { emoji: '👾', msg: 'Gak usah ke apotek, obat hatiku ya kamu doang 💊🤍' },
+  { emoji: '👽', msg: 'Ditembak berasa dapet DM dari gebetan — seneng tapi kaget 📩' },
+  { emoji: '🛸', msg: 'Kayak sinyal di basement — susah dapet, tapi kalau dapet... MANTAP 📡' },
+  { emoji: '👾', msg: 'Putri itu kayak lagu favorit — diulang terus gak bosen 🎵' },
+  { emoji: '👽', msg: 'Kamu itu bug di hidupku — gak bisa di-fix, tapi gak mau diilangin 🐛🤍' },
+  { emoji: '🛸', msg: 'Kalau Putri jadi planet, aku mau jadi bulannya. Setia ngorbit 🌙' },
+  { emoji: '👾', msg: 'Sholawat dulu gaes, biar hati tenang~ Eh malah makin keinget kamu 🤲🫠' },
+  { emoji: '👽', msg: 'Aku tuh bukan siapa-siapa, tapi pengen jadi siapa-siapanya kamu 🥺✨' },
 ]
 
 const BOSS_HIT_MESSAGES = [
@@ -27,6 +37,18 @@ const BOSS_HIT_MESSAGES = [
   'ADUHH! Kamu itu pendiem tapi pukulannya keras juga ya 🫣',
   'Awww! Kayak ditinggal read... eh ditembak deng 😵',
   'UGH hampir kalah... persis kayak aku kalah sama sifat cuek kamu 🏳️',
+  'ANJIR kena lagi! Kamu kalau nembak kok akurat banget, nembak hati juga gitu dong 😩💘',
+  'Aw aw aw~ Sakit bang... eh dek... eh sayang? Aduh bingung 🤯',
+  'Kena terus! Persis kayak aku yang kena pesona kamu terus 🫠✨',
+  'Duhhh HP ku abis kayak pulsa aku tiap bulan — gegara chattingan 📱💀',
+  'Stop nembak! ...aku belum siap. Eh, siap ding. TEMBAK AJA TERUS! 🏹🤍',
+  'ITU SAKIT TAU! Tapi gapapa, dari kamu mah apa aja rela 🥲',
+  'Ouch~ Kayak ditolak pas ngajak jalan... padahal cuma mau makan bakso 🍜😭',
+  'AAARGH! Oke fine, kamu menang... kayak biasa. Aku selalu kalah dari kamu 🏳️🤍',
+  'Bruh kamu nembaknya kayak nembak mantan — gak ada ampun 💀🔫',
+  'Wadaw! Tapi lucunya... aku gak bisa marah sama kamu 🫠💕',
+  'COMBO HIT! Kayak combo rindu yang numpuk gara-gara kamu jarang chat 😤📵',
+  'Sakit tapi... kok aku malah senyum ya? Aneh. Kamu aneh. Aku aneh. Kita cocok 🤪🤍',
 ]
 
 const BOSS_FINAL_MESSAGE = 'Ya Allah, di balik semua ujian — diamnya, cueknya, ngambeknya — jadikanlah itu semua jalan bagi kami untuk saling memahami. Lembutkan hatinya, jaga hatinya, dan pertemukan kami di jalan yang Engkau ridhai. Aamiin 🤲🤍'
@@ -52,19 +74,34 @@ const PUTRI_HIT_REACTIONS = [
   'Kena! Tapi bukan masalah besar kok 🤏',
   'Hmm kena... tapi aku gak mau bikin drama 🎭',
   'Ah gpp, yang penting semua orang seneng 🌸',
+  'Ouch~ ...tapi vibes-nya kayak ditimpuk bunga, jadi ya gpp lah 🌺',
+  'Kena! Tapi aku mah apa atuh, yang penting kamu hepi 🥲✨',
+  'Astaghfirullah kena... sabar sabar, ini ujian 🤲😅',
+  'Duh! Auto mode "yaudahlah ya" activated 🔄🙃',
+  'Kena lagi... aku ntar curhat ke bantal aja deh 🛏️😭',
+  'Aw! Tapi... aku emang biasa gak dianggep sih hehe 🤡',
+  'Waduh! Untung aku punya armor gak-enakan level 99 🛡️🫠',
+  'Ke-hit... tapi the show must go on, kan? 🎭✨',
+  'Adeh! Gpp gpp, aku mah fleksibel kayak awan ☁️🤍',
+  'Sakit dikit doang kok... *nangis dalem hati* 🥹💧',
+  'Hmm... anggap aja ini character development ya 📖😌',
+  'Kena! Gpp, namanya juga main game, bukan main perasaan 🎮💔',
+  'Auto bilang "gapapa" padahal dalemnya: AAAAA 🫠🫠🫠',
+  'Aku baik-baik aja~ ...kata-kata favoritku sepanjang masa 🙂‍↕️',
+  'Duh kena! Tapi ntar juga lupa kok. Aku ahli move on... dari rasa sakit 🚶‍♀️💨',
 ]
 
 // 9 Boss Phases — each life has unique appearance, difficulty, and personality
 const BOSS_PHASES = [
-  { emoji: '👾', name: 'Shadow Minion', shootMin: 0.9, shootMax: 1.4, bulletCount: 1, spread: 5, bulletSpeed: 35, playerDmg: 20, color: '#22c55e', taunt: 'Haha, ini baru pemanasan~ 😏' },
-  { emoji: '👽', name: 'Alien Scout', shootMin: 0.8, shootMax: 1.2, bulletCount: 2, spread: 8, bulletSpeed: 38, playerDmg: 17, color: '#84cc16', taunt: 'Wah, lumayan juga kamu... 🤨' },
-  { emoji: '🤖', name: 'Robo Hunter', shootMin: 0.7, shootMax: 1.0, bulletCount: 2, spread: 10, bulletSpeed: 42, playerDmg: 14, color: '#eab308', taunt: 'Oke, mulai serius nih! 😤' },
-  { emoji: '👹', name: 'Demon Warrior', shootMin: 0.6, shootMax: 0.9, bulletCount: 3, spread: 12, bulletSpeed: 45, playerDmg: 12, color: '#f97316', taunt: 'Kamu kuat juga ternyata! 💀' },
-  { emoji: '🐉', name: 'Dragon Lord', shootMin: 0.5, shootMax: 0.8, bulletCount: 3, spread: 14, bulletSpeed: 48, playerDmg: 11, color: '#ef4444', taunt: 'ARGH! Nyebelin banget! 😡' },
-  { emoji: '💀', name: 'Skull Reaper', shootMin: 0.45, shootMax: 0.7, bulletCount: 3, spread: 16, bulletSpeed: 50, playerDmg: 10, color: '#dc2626', taunt: 'Aku GAK AKAN kalah! 🔥' },
-  { emoji: '🔥', name: 'Fire Phoenix', shootMin: 0.4, shootMax: 0.65, bulletCount: 4, spread: 18, bulletSpeed: 52, playerDmg: 9, color: '#b91c1c', taunt: 'IMPOSSIBLE! Gimana bisa?! 😱' },
-  { emoji: '⚡', name: 'Thunder God', shootMin: 0.35, shootMax: 0.55, bulletCount: 4, spread: 20, bulletSpeed: 55, playerDmg: 8, color: '#991b1b', taunt: 'Ini... pertarungan terakhir... 😰' },
-  { emoji: '🌑', name: '☠️ FINAL FORM', shootMin: 0.3, shootMax: 0.5, bulletCount: 5, spread: 22, bulletSpeed: 58, playerDmg: 7, color: '#7f1d1d', taunt: '⚠️ BERSIAPLAH UNTUK AKHIRMU! ⚠️' },
+  { emoji: '👾', name: 'Si Bisik Bayangan', shootMin: 0.9, shootMax: 1.4, bulletCount: 1, spread: 5, bulletSpeed: 35, playerDmg: 20, color: '#22c55e', taunt: 'Haha, ini baru pemanasan~ Kamu yakin kuat? 😏💅' },
+  { emoji: '👽', name: 'Sang Debu Bintang', shootMin: 0.8, shootMax: 1.2, bulletCount: 2, spread: 8, bulletSpeed: 38, playerDmg: 17, color: '#84cc16', taunt: 'Lumayan juga... tapi cintaku lebih kuat dari tembakanmu 💚🌟' },
+  { emoji: '🤖', name: 'Raja Karat Hati', shootMin: 0.7, shootMax: 1.0, bulletCount: 2, spread: 10, bulletSpeed: 42, playerDmg: 14, color: '#eab308', taunt: 'Oke, mulai serius! Kayak perasaanku ke kamu 😤⚙️' },
+  { emoji: '👹', name: 'Ksatria Rindu Senja', shootMin: 0.6, shootMax: 0.9, bulletCount: 3, spread: 12, bulletSpeed: 45, playerDmg: 12, color: '#f97316', taunt: 'Kamu kuat?! Aku lebih kuat... kuat nahan kangen 💀🌅' },
+  { emoji: '🐉', name: 'Naga Patah Hati', shootMin: 0.5, shootMax: 0.8, bulletCount: 3, spread: 14, bulletSpeed: 48, playerDmg: 11, color: '#ef4444', taunt: 'ARGH! Kamu nyebelin... tapi kok aku gak bisa benci?! 😡💔' },
+  { emoji: '💀', name: 'Sang Penjaga Luka', shootMin: 0.45, shootMax: 0.7, bulletCount: 3, spread: 16, bulletSpeed: 50, playerDmg: 10, color: '#dc2626', taunt: 'Tiap luka yang kau beri, aku simpan jadi kenangan 🔥💀' },
+  { emoji: '🔥', name: 'Phoenix Cinta Abadi', shootMin: 0.4, shootMax: 0.65, bulletCount: 4, spread: 18, bulletSpeed: 52, playerDmg: 9, color: '#b91c1c', taunt: 'IMPOSSIBLE! Seperti move on darimu — gak bisa! 😱🔥' },
+  { emoji: '⚡', name: 'Dewa Petir Galau', shootMin: 0.35, shootMax: 0.55, bulletCount: 4, spread: 20, bulletSpeed: 55, playerDmg: 8, color: '#991b1b', taunt: 'Ini pertarungan terakhir... sebelum aku menyerah padamu 😰⚡' },
+  { emoji: '🌑', name: '☠️ RAJA KEGELAPAN HATI', shootMin: 0.3, shootMax: 0.5, bulletCount: 5, spread: 22, bulletSpeed: 58, playerDmg: 7, color: '#7f1d1d', taunt: '⚠️ AKU ADALAH SEMUA YANG KAU TAKUTKAN... DAN RINDUKAN! ⚠️' },
 ]
 
 // Helper: convert hex color to rgba
@@ -234,7 +271,7 @@ export default function SpaceShooter({ onComplete }) {
     const fallingHeads = []
     let enemyShootTimer = 0
     const enemies = ENEMY_MESSAGES.map((e, i) => ({
-      x: 15 + (i % 5) * 17, y: 8 + Math.floor(i / 5) * 10,
+      x: 12 + (i % 5) * 18, y: 6 + Math.floor(i / 5) * 8,
       alive: true, emoji: e.emoji, msg: e.msg,
     }))
     let lastTime = performance.now(), animId
@@ -342,7 +379,7 @@ export default function SpaceShooter({ onComplete }) {
             for (let p = 0; p < 8; p++) {
               particles.push({ x: (e.x / 100) * w, y: (e.y / 100) * h, vx: (Math.random() - 0.5) * 120, vy: (Math.random() - 0.5) * 120, life: 0.6 + Math.random() * 0.3 })
             }
-            if (score >= 10) { done = true; setRound(2) }
+            if (score >= 20) { done = true; setRound(2) }
             continue outer
           }
         }
@@ -373,7 +410,7 @@ export default function SpaceShooter({ onComplete }) {
       // Score
       ctx.fillStyle = 'rgba(251,191,36,0.7)'; ctx.font = `bold ${Math.min(14, w * 0.032)}px system-ui, sans-serif`
       ctx.textAlign = 'left'; ctx.textBaseline = 'top'
-      ctx.fillText(`ROUND 1 — ⭐ ${score}/10`, 12, 12)
+      ctx.fillText(`ROUND 1 — ⭐ ${score}/20`, 12, 12)
 
       if (!done) { animId = requestAnimationFrame(loop) }
       else {
