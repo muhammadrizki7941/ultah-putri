@@ -12,7 +12,7 @@ import SpaceShooter from './SpaceShooterGame'
 // ============================================================
 // DEV MODE — set false sebelum deploy/production
 // ============================================================
-const DEV_MODE = true
+const DEV_MODE = false
 
 const CHAPTERS = [
   { id: 0, num: '', title: 'Pintu Awal', icon: '🚪', meaning: 'Setiap cerita besar dimulai dari keberanian membuka pintu pertama.', mood: 'mystery' },
