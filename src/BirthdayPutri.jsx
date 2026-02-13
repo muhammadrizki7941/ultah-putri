@@ -738,33 +738,53 @@ export default function BirthdayPutri() {
     // Clear any previous fade intervals to prevent overlap
     fadeIntervalsRef.current.forEach(id => clearInterval(id))
     fadeIntervalsRef.current = []
-    const trackInterval = (id) => { fadeIntervalsRef.current.push(id); return id }
     const fadeOut = (audio) => {
       if (!audio || audio.paused) return
-      trackInterval(setInterval(() => {
+      const id = setInterval(() => {
         if (audio.volume > 0.05) {
           audio.volume = Math.max(0, audio.volume - 0.05)
         } else {
           audio.pause()
           audio.volume = 0
-          clearInterval(fadeIntervalsRef.current.pop())
+          clearInterval(id)
+          const idx = fadeIntervalsRef.current.indexOf(id)
+          if (idx !== -1) fadeIntervalsRef.current.splice(idx, 1)
         }
-      }, 80))
+      }, 80)
+      fadeIntervalsRef.current.push(id)
     }
     const fadeIn = (audio) => {
       if (!audio) return
       // Cancel warmup so it won't pause this audio
       warmingUpRef.current.delete(audio)
-      if (!audio.paused) return
+      if (!audio.paused) {
+        // Already playing (e.g. from warmup at vol 0) — just ramp volume up
+        if (audio.volume < 0.35) {
+          const id = setInterval(() => {
+            if (audio.volume < 0.35) {
+              audio.volume = Math.min(0.4, audio.volume + 0.05)
+            } else {
+              clearInterval(id)
+              const idx = fadeIntervalsRef.current.indexOf(id)
+              if (idx !== -1) fadeIntervalsRef.current.splice(idx, 1)
+            }
+          }, 80)
+          fadeIntervalsRef.current.push(id)
+        }
+        return
+      }
       audio.volume = 0
       audio.play().then(() => {
-        trackInterval(setInterval(() => {
+        const id = setInterval(() => {
           if (audio.volume < 0.35) {
             audio.volume = Math.min(0.4, audio.volume + 0.05)
           } else {
-            clearInterval(fadeIntervalsRef.current.pop())
+            clearInterval(id)
+            const idx = fadeIntervalsRef.current.indexOf(id)
+            if (idx !== -1) fadeIntervalsRef.current.splice(idx, 1)
           }
-        }, 80))
+        }, 80)
+        fadeIntervalsRef.current.push(id)
       }).catch(() => {})
     }
     // Determine which track should play
