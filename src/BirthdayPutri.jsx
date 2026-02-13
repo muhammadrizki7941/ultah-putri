@@ -1374,6 +1374,8 @@ export default function BirthdayPutri() {
   const bgm1Ref = useRef(null)
   const bgm2Ref = useRef(null)
   const bgm3Ref = useRef(null)
+  const warmingUpRef = useRef(new Set())
+  const fadeIntervalsRef = useRef([])
 
   const currentChapter = chapter >= 0 ? CHAPTERS[chapter] : null
   const currentMood = currentChapter?.mood || 'mystery'
@@ -1393,8 +1395,16 @@ export default function BirthdayPutri() {
       // Pre-unlock bgm2 and bgm3 so browser allows playback later
       ;[bgm2Ref.current, bgm3Ref.current].forEach(a => {
         if (!a) return
+        warmingUpRef.current.add(a)
         a.volume = 0
-        a.play().then(() => { a.pause(); a.currentTime = 0 }).catch(() => {})
+        a.play().then(() => {
+          // Only pause if still in warmup (not taken over by fadeIn)
+          if (warmingUpRef.current.has(a)) {
+            a.pause()
+            a.currentTime = 0
+            warmingUpRef.current.delete(a)
+          }
+        }).catch(() => { warmingUpRef.current.delete(a) })
       })
     }).catch(() => {})
   }
@@ -1436,29 +1446,36 @@ export default function BirthdayPutri() {
   // BGM switching (bgm1 for 0-7, bgm2 for 8-12, bgm3 for 13+)
   useEffect(() => {
     if (!musicStartedRef.current) return
+    // Clear any previous fade intervals to prevent overlap
+    fadeIntervalsRef.current.forEach(id => clearInterval(id))
+    fadeIntervalsRef.current = []
+    const trackInterval = (id) => { fadeIntervalsRef.current.push(id); return id }
     const fadeOut = (audio) => {
       if (!audio || audio.paused) return
-      const id = setInterval(() => {
+      trackInterval(setInterval(() => {
         if (audio.volume > 0.05) {
           audio.volume = Math.max(0, audio.volume - 0.05)
         } else {
           audio.pause()
           audio.volume = 0
-          clearInterval(id)
+          clearInterval(fadeIntervalsRef.current.pop())
         }
-      }, 80)
+      }, 80))
     }
     const fadeIn = (audio) => {
-      if (!audio || !audio.paused) return
+      if (!audio) return
+      // Cancel warmup so it won't pause this audio
+      warmingUpRef.current.delete(audio)
+      if (!audio.paused) return
       audio.volume = 0
       audio.play().then(() => {
-        const id = setInterval(() => {
+        trackInterval(setInterval(() => {
           if (audio.volume < 0.35) {
             audio.volume = Math.min(0.4, audio.volume + 0.05)
           } else {
-            clearInterval(id)
+            clearInterval(fadeIntervalsRef.current.pop())
           }
-        }, 80)
+        }, 80))
       }).catch(() => {})
     }
     // Determine which track should play
@@ -1475,6 +1492,10 @@ export default function BirthdayPutri() {
     }
     others.forEach(fadeOut)
     fadeIn(active)
+    return () => {
+      fadeIntervalsRef.current.forEach(id => clearInterval(id))
+      fadeIntervalsRef.current = []
+    }
   }, [chapter])
 
   // Mute/unmute
