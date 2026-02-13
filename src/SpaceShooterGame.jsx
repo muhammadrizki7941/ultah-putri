@@ -215,9 +215,9 @@ export default function SpaceShooter({ onComplete }) {
     const dpr = window.devicePixelRatio || 1
     let w, h
     const resize = () => {
-      const rect = canvas.getBoundingClientRect()
-      w = rect.width; h = rect.height
+      w = window.innerWidth; h = window.innerHeight
       canvas.width = w * dpr; canvas.height = h * dpr
+      canvas.style.width = w + 'px'; canvas.style.height = h + 'px'
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
     resize()
@@ -406,9 +406,9 @@ export default function SpaceShooter({ onComplete }) {
     const dpr = window.devicePixelRatio || 1
     let w, h
     const resize = () => {
-      const rect = canvas.getBoundingClientRect()
-      w = rect.width; h = rect.height
+      w = window.innerWidth; h = window.innerHeight
       canvas.width = w * dpr; canvas.height = h * dpr
+      canvas.style.width = w + 'px'; canvas.style.height = h + 'px'
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
     resize()
@@ -777,12 +777,12 @@ export default function SpaceShooter({ onComplete }) {
 
   // ======== RENDER — Fullscreen Game ========
   return (
-    <div className="fixed inset-0 z-[100]" style={{ background: '#0c0a09' }}>
-      {/* Game Canvas */}
+    <div className="fixed inset-0 z-[100]" style={{ background: '#0c0a09', width: '100vw', height: '100dvh' }}>
+      {/* Game Canvas — fills entire viewport */}
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
-        style={{ touchAction: 'none' }}
+        className="block cursor-crosshair"
+        style={{ touchAction: 'none', width: '100vw', height: '100dvh' }}
       />
 
       {/* Round indicator (top center) */}

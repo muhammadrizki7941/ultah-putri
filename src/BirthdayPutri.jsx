@@ -12,7 +12,7 @@ import SpaceShooter from './SpaceShooterGame'
 // ============================================================
 // DEV MODE — set false sebelum deploy/production
 // ============================================================
-const DEV_MODE = false
+const DEV_MODE = true
 
 const CHAPTERS = [
   { id: 0, num: '', title: 'Pintu Awal', icon: '🚪', meaning: 'Setiap cerita besar dimulai dari keberanian membuka pintu pertama.', mood: 'mystery' },
@@ -1713,27 +1713,7 @@ export default function BirthdayPutri() {
 
       // ======== BAB XIII: Misi Luar Angkasa (Space Shooter) ========
       case 13:
-        return (
-          <SceneCard mood="fun">
-            <div className="text-center space-y-3">
-              <motion.p
-                className="text-4xl"
-                animate={{ y: [0, -8, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-              >
-                🚀
-              </motion.p>
-              <h2 className="text-base font-bold text-amber-700">
-                Misi: Hancurkan Hal Negatif!
-              </h2>
-              <p className="text-xs sm:text-sm text-amber-600">
-                2 Round: hancurkan semua musuh, lalu hadapi BOSS terakhir! 🎯
-              </p>
-              <SpaceShooter onComplete={next} />
-            </div>
-            <ChapterMeaning meaning={CHAPTERS[13].meaning} />
-          </SceneCard>
-        )
+        return <SpaceShooter onComplete={next} />
 
       // ======== BAB XIV: Hari Istimewa (Birthday Wish) ========
       case 14:
@@ -2162,8 +2142,8 @@ export default function BirthdayPutri() {
       {/* Dynamic particles */}
       {chapter >= 0 && !showIntro && <DynamicParticles mood={currentMood} />}
 
-      {/* Mute toggle */}
-      {chapter >= 0 && !showIntro && (
+      {/* Mute toggle — hidden during fullscreen game (ch 13) */}
+      {chapter >= 0 && !showIntro && chapter !== 13 && (
         <button
           onClick={() => setMuted((m) => !m)}
           className="fixed top-2 right-3 z-50 w-9 h-9 flex items-center justify-center
@@ -2211,8 +2191,8 @@ export default function BirthdayPutri() {
         </div>
       )}
 
-      {/* Journey indicator */}
-      {chapter >= 0 && !showIntro && (
+      {/* Journey indicator — hidden during fullscreen game (ch 13) */}
+      {chapter >= 0 && !showIntro && chapter !== 13 && (
         <JourneyIndicator
           current={chapter}
           total={CHAPTERS.length}
