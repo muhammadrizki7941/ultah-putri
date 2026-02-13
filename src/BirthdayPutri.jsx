@@ -581,11 +581,11 @@ function TypewriterText({ text, delay = 0, speed = 35, className = '' }) {
 
 // ---------- Constellation Star (Interactive) ----------
 function ConstellationStar({ star, index, isActive, onActivate, hasBeenTapped }) {
-  const showAbove = star.y > 45
-  const alignLeft = star.x > 65 ? 'right-0' : star.x < 35 ? 'left-0' : 'left-1/2 -translate-x-1/2'
+  const showAbove = star.y > 40
+  const alignLeft = star.x > 60 ? 'right-0' : star.x < 30 ? 'left-0' : 'left-1/2 -translate-x-1/2'
   return (
     <motion.div
-      className="absolute z-[2]"
+      className={`absolute ${isActive ? 'z-[20]' : 'z-[2]'}`}
       style={{ left: `${star.x}%`, top: `${star.y}%`, transform: 'translate(-50%, -50%)' }}
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
@@ -612,11 +612,11 @@ function ConstellationStar({ star, index, isActive, onActivate, hasBeenTapped })
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ type: 'spring', stiffness: 300 }}
-            className={`absolute w-40 sm:w-48 bg-black/90 backdrop-blur-md
-                       rounded-xl p-2.5 sm:p-3 border border-amber-400/30 shadow-lg shadow-amber-500/20
-                       z-[10] ${showAbove ? 'bottom-9 sm:bottom-10' : 'top-9 sm:top-10'} ${alignLeft}`}
+            className={`absolute w-48 sm:w-56 bg-black/95 backdrop-blur-md
+                       rounded-xl p-3 sm:p-3.5 border border-amber-400/40 shadow-xl shadow-amber-500/30
+                       z-[30] ${showAbove ? 'bottom-9 sm:bottom-10' : 'top-9 sm:top-10'} ${alignLeft}`}
           >
-            <p className="text-[10px] sm:text-[11px] text-amber-300 leading-snug text-center">
+            <p className="text-[11px] sm:text-xs text-amber-200 leading-relaxed text-center">
               {star.msg}
             </p>
           </motion.div>
@@ -1629,14 +1629,15 @@ export default function BirthdayPutri() {
       // ======== BAB XII: Konstelasi Putri (Interactive Constellation) ========
       case 12: {
         const constellationStars = [
-          { x: 18, y: 18, msg: 'Kamu tipe yang nolak makanan tapi takut bikin orang kecewa 🍕' },
-          { x: 50, y: 10, msg: 'Bilang "gapapa" tapi dalemnya udah overthinking 🤯' },
-          { x: 82, y: 20, msg: 'Lebih milih diem daripada bikin ribet orang lain 🫠' },
-          { x: 30, y: 42, msg: 'Sering ngalah bukan karena lemah, tapi karena gak enakan 🤍' },
-          { x: 70, y: 40, msg: 'Kamu selalu mikirin perasaan orang lain duluan sebelum diri sendiri 🌙' },
-          { x: 15, y: 68, msg: 'Terlalu baik sampe kadang lupa — kamu juga boleh egois 🥺' },
-          { x: 50, y: 62, msg: 'Si paling gak enakan, tapi justru itu yang bikin kamu spesial ✨' },
-          { x: 82, y: 70, msg: 'Kamu bintang yang terang tapi gak pernah ngerasa bersinar 🌌' },
+          { x: 15, y: 12, msg: 'Kamu tipe yang nolak makanan tapi takut bikin orang kecewa 🍕' },
+          { x: 50, y: 8, msg: 'Bilang "gapapa" tapi dalemnya udah overthinking 🤯' },
+          { x: 85, y: 14, msg: 'Lebih milih diem daripada bikin ribet orang lain 🫠' },
+          { x: 25, y: 35, msg: 'Sering ngalah bukan karena lemah, tapi karena gak enakan 🤍' },
+          { x: 75, y: 33, msg: 'Kamu selalu mikirin perasaan orang lain duluan sebelum diri sendiri 🌙' },
+          { x: 12, y: 58, msg: 'Terlalu baik sampe kadang lupa — kamu juga boleh egois 🥺' },
+          { x: 50, y: 55, msg: 'Si paling gak enakan, tapi justru itu yang bikin kamu spesial ✨' },
+          { x: 88, y: 60, msg: 'Kamu bintang yang terang tapi gak pernah ngerasa bersinar 🌌' },
+          { x: 50, y: 80, msg: 'Kamu itu mandiri — diam-diam kuat, diam-diam tangguh, diam-diam hebat. Semua kamu hadapin sendiri tanpa banyak ngeluh 💪🤍' },
         ]
         return (
           <SceneCard mood="emotional">
@@ -1656,7 +1657,7 @@ export default function BirthdayPutri() {
               </p>
 
               {/* Interactive Night Sky */}
-              <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden bg-gradient-to-b from-[#0c0a09] via-[#1a1520] to-[#0c0a09] border border-amber-800/20">
+              <div className="relative w-full h-80 sm:h-96 rounded-2xl overflow-hidden bg-gradient-to-b from-[#0c0a09] via-[#1a1520] to-[#0c0a09] border border-amber-800/20">
                 {/* Twinkling background stars */}
                 {Array.from({ length: 40 }, (_, i) => (
                   <motion.div
