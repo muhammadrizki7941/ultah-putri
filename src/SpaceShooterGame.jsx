@@ -91,6 +91,34 @@ const PUTRI_HIT_REACTIONS = [
   'Duh kena! Tapi ntar juga lupa kok. Aku ahli move on... dari rasa sakit 🚶‍♀️💨',
 ]
 
+const PUTRI_POWERUP_MESSAGES = [
+  'Alhamdulillah, Allah bantu aku jadi kuat! 💪✨',
+  'Bismillah! Aku bersinar sekarang! 🤲🔥',
+  'MasyaAllah, powerku naik! Ini berkah! ✨✨',
+  'Yakin bisa! Allah selalu bersamaku! 💖🌟',
+  'Level up! Rasanya kayak habis makan nasi padang 🍛💪',
+  'POWER UP! Kayak abis dapet nilai A+ 📚✨',
+  'Aku gede sekarang! Lebih gede dari semangat Senin pagi 😂💪',
+  'Mode dewa activated~ Tapi tetep kalem 😌🔥',
+  'Subhanallah aku kuat! Lebih kuat dari godaan rebahan 😴💪',
+  'Alhamdulillah ada power up! Rejeki anak sholehah 🤲✨',
+  'Kayak dapet cashback 90%... berkah gak kemana! 💸✨',
+  'GLOW UP MOMENT! Cantik + kuat = Putri seutuhnya 💅🔥',
+  'Allahu Akbar! Ini mah easy game easy life 😎🌟',
+  'Mode carry activated! Gak butuh backup 💪😤',
+  'Berasa main game pake cheat... tapi halal! 🤲😂',
+  'Bismillah, gak ada yang mustahil! Allah Maha Besar 🙏💖',
+  'ULTRA INSTINCT PUTRI! Gak ada yang bisa nyentuh aku~ 🔥🔥',
+  'Doa mama manjur banget ternyata! 🤲✨💕',
+  'Aku besar! Aku kuat! Aku... tetep humble dong 🍕💪😂',
+  'Ya Allah makasih kekuatannya~ Janji gak sombong! 🤲🌸',
+  'Power of doa subuh! Siapa suruh bolos sholat 🌅💪',
+  'Auto OP! Ini yang namanya berkah istiqomah 📿✨',
+  'WUUUSH! Kayak angin surga lewat~ Harum dan kuat! 🌬️🌸',
+  'Aku level 999 sekarang! Tapi tetep rendah hati ya 😇💖',
+  'Ini baru namanya buff dari Yang Maha Kuasa! 🤲🔥',
+]
+
 // 9 Boss Phases — each life has unique appearance, difficulty, and personality
 const BOSS_PHASES = [
   { emoji: '👾', name: 'Si Bisik Bayangan', shootMin: 0.9, shootMax: 1.4, bulletCount: 1, spread: 5, bulletSpeed: 35, playerDmg: 20, color: '#22c55e', taunt: 'Haha, ini baru pemanasan~ Kamu yakin kuat? 😏💅' },
@@ -126,18 +154,23 @@ export default function SpaceShooter({ onComplete }) {
   }, [])
 
   // Helper: draw ship + Putri head
-  const drawShip = (ctx, shipX, shipY, w, now, putriImg, hitFlash) => {
+  const drawShip = (ctx, shipX, shipY, w, now, putriImg, hitFlash, powered = false) => {
     const isHit = hitFlash > 0
     const shOx = isHit ? Math.sin(now / 30) * 3 : 0
     const shOy = isHit ? Math.cos(now / 25) * 2 : 0
-    ctx.font = `${w * 0.08}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    const sc = powered ? 1.5 : 1
+    ctx.font = `${w * 0.08 * sc}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
     ctx.fillText('\ud83d\ude80', shipX + shOx, shipY + shOy)
+    if (powered) {
+      ctx.fillStyle = `rgba(251,191,36,${0.3 + Math.sin(now / 80) * 0.2})`
+      ctx.beginPath(); ctx.arc(shipX, shipY - w * 0.02, w * 0.07, 0, Math.PI * 2); ctx.fill()
+    }
     ctx.fillStyle = `rgba(251,191,36,${0.2 + Math.sin(now / 150) * 0.15})`
-    ctx.beginPath(); ctx.arc(shipX + shOx, shipY + shOy + w * 0.045, w * 0.018, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.arc(shipX + shOx, shipY + shOy + w * 0.045, w * 0.018 * sc, 0, Math.PI * 2); ctx.fill()
     if (putriImg) {
-      const headSize = w * 0.09
+      const headSize = w * 0.09 * sc
       const hx = shipX + shOx - headSize / 2
-      const hy = shipY + shOy - w * 0.075 - headSize * 0.7
+      const hy = shipY + shOy - w * 0.075 * sc - headSize * 0.7
       ctx.save()
       if (isHit) ctx.globalAlpha = 0.5 + Math.sin(now / 40) * 0.5
       ctx.beginPath()
@@ -145,8 +178,10 @@ export default function SpaceShooter({ onComplete }) {
       ctx.clip()
       ctx.drawImage(putriImg, hx, hy, headSize, headSize)
       ctx.restore()
-      ctx.strokeStyle = isHit ? '#ef4444' : '#fbbf24'; ctx.lineWidth = 1.5
+      ctx.strokeStyle = isHit ? '#ef4444' : '#fbbf24'; ctx.lineWidth = powered ? 2.5 : 1.5
+      if (powered) { ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 12 }
       ctx.beginPath(); ctx.arc(shipX + shOx, hy + headSize / 2, headSize / 2, 0, Math.PI * 2); ctx.stroke()
+      ctx.shadowBlur = 0
     }
   }
 
@@ -270,6 +305,7 @@ export default function SpaceShooter({ onComplete }) {
     let hitFlashTimer = 0
     const fallingHeads = []
     let enemyShootTimer = 0
+    let noHitTimer = 0, isPoweredUp = false, powerUpMsg = null, powerUpMsgTimer = 0, powerUpMsgIdx = 0
     const enemies = ENEMY_MESSAGES.map((e, i) => ({
       x: 12 + (i % 5) * 18, y: 6 + Math.floor(i / 5) * 8,
       alive: true, emoji: e.emoji, msg: e.msg,
@@ -298,6 +334,14 @@ export default function SpaceShooter({ onComplete }) {
       hitReactionTimer = Math.max(0, hitReactionTimer - dt)
       hitFlashTimer = Math.max(0, hitFlashTimer - dt)
       enemyShootTimer -= dt
+      noHitTimer += dt
+      powerUpMsgTimer = Math.max(0, powerUpMsgTimer - dt)
+      if (!isPoweredUp && noHitTimer >= 3) {
+        isPoweredUp = true
+        powerUpMsg = PUTRI_POWERUP_MESSAGES[powerUpMsgIdx % PUTRI_POWERUP_MESSAGES.length]
+        powerUpMsgIdx++
+        powerUpMsgTimer = 2.5
+      }
 
       ctx.clearRect(0, 0, w, h)
       ctx.fillStyle = '#0c0a09'; ctx.fillRect(0, 0, w, h)
@@ -343,8 +387,9 @@ export default function SpaceShooter({ onComplete }) {
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i]; b.y -= 70 * dt
         if (b.y < -2) { bullets.splice(i, 1); continue }
-        ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 6
-        ctx.beginPath(); ctx.arc((b.x / 100) * w, (b.y / 100) * h, 3, 0, Math.PI * 2); ctx.fill()
+        const bR = isPoweredUp ? 6 : 3
+        ctx.fillStyle = isPoweredUp ? '#fde68a' : '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = isPoweredUp ? 14 : 6
+        ctx.beginPath(); ctx.arc((b.x / 100) * w, (b.y / 100) * h, bR, 0, Math.PI * 2); ctx.fill()
         ctx.shadowBlur = 0
       }
 
@@ -361,6 +406,7 @@ export default function SpaceShooter({ onComplete }) {
           hitReactionIdx++
           hitReactionTimer = 1.8
           hitFlashTimer = 0.4
+          noHitTimer = 0; isPoweredUp = false
           const sx = (ship.x / 100) * w, sy = h * 0.92 - w * 0.1
           fallingHeads.push({ x: sx, y: sy, vx: (Math.random() - 0.5) * 120, vy: -150 - Math.random() * 80, rot: 0, spin: (Math.random() - 0.5) * 12, life: 2 })
         }
@@ -373,7 +419,8 @@ export default function SpaceShooter({ onComplete }) {
         for (let ei = 0; ei < enemies.length; ei++) {
           const e = enemies[ei]
           if (!e.alive) continue
-          if (Math.abs(b.x - e.x) < 6 && Math.abs(b.y - e.y) < 6) {
+          const hitR = isPoweredUp ? 9 : 6
+          if (Math.abs(b.x - e.x) < hitR && Math.abs(b.y - e.y) < hitR) {
             e.alive = false; bullets.splice(bi, 1); score++
             showMsg = e.msg; msgTimer = 2.2
             for (let p = 0; p < 8; p++) {
@@ -396,9 +443,10 @@ export default function SpaceShooter({ onComplete }) {
 
       // Ship + Putri head
       const shipX = (ship.x / 100) * w, shipY = h * 0.92
-      drawShip(ctx, shipX, shipY, w, now, putriImgRef.current, hitFlashTimer)
+      drawShip(ctx, shipX, shipY, w, now, putriImgRef.current, hitFlashTimer, isPoweredUp)
       drawFallingHeads(ctx, fallingHeads, dt, w, h, putriImgRef.current)
       drawHitReaction(ctx, hitReaction, Math.min(1, hitReactionTimer * 1.5), shipX, shipY, w, 0)
+      if (powerUpMsg && powerUpMsgTimer > 0) drawHitReaction(ctx, '⚡ ' + powerUpMsg, Math.min(1, powerUpMsgTimer * 0.7), shipX, shipY, w, 30)
 
       // Message overlay
       if (showMsg && msgTimer > 0) {
@@ -470,6 +518,7 @@ export default function SpaceShooter({ onComplete }) {
     let hitFlashTimer = 0
     const fallingHeads = []
     let bossShootTimer = 1.0
+    let noHitTimer = 0, isPoweredUp = false, powerUpMsg = null, powerUpMsgTimer = 0, powerUpMsgIdx = 0
 
     // Transition states
     let deathTimer = 0        // >0 = boss death animation playing
@@ -506,6 +555,15 @@ export default function SpaceShooter({ onComplete }) {
       hitFlashTimer = Math.max(0, hitFlashTimer - dt)
 
       const inTransition = deathTimer > 0 || introTimer > 0
+
+      noHitTimer += dt
+      powerUpMsgTimer = Math.max(0, powerUpMsgTimer - dt)
+      if (!isPoweredUp && noHitTimer >= 3 && !inTransition && !done) {
+        isPoweredUp = true
+        powerUpMsg = PUTRI_POWERUP_MESSAGES[powerUpMsgIdx % PUTRI_POWERUP_MESSAGES.length]
+        powerUpMsgIdx++
+        powerUpMsgTimer = 2.5
+      }
 
       // ---- Death transition ----
       if (deathTimer > 0) {
@@ -594,8 +652,9 @@ export default function SpaceShooter({ onComplete }) {
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i]; b.y -= 70 * dt
         if (b.y < -2) { bullets.splice(i, 1); continue }
-        ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 6
-        ctx.beginPath(); ctx.arc((b.x / 100) * w, (b.y / 100) * h, 3, 0, Math.PI * 2); ctx.fill()
+        const bR = isPoweredUp ? 6 : 3
+        ctx.fillStyle = isPoweredUp ? '#fde68a' : '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = isPoweredUp ? 14 : 6
+        ctx.beginPath(); ctx.arc((b.x / 100) * w, (b.y / 100) * h, bR, 0, Math.PI * 2); ctx.fill()
         ctx.shadowBlur = 0
       }
 
@@ -615,6 +674,7 @@ export default function SpaceShooter({ onComplete }) {
           hitReactionIdx++
           hitReactionTimer = 1.8
           hitFlashTimer = 0.4
+          noHitTimer = 0; isPoweredUp = false
           const spx = (ship.x / 100) * w, spy = h * 0.92 - w * 0.1
           fallingHeads.push({ x: spx, y: spy, vx: (Math.random() - 0.5) * 120, vy: -150 - Math.random() * 80, rot: 0, spin: (Math.random() - 0.5) * 12, life: 2 })
         }
@@ -624,7 +684,8 @@ export default function SpaceShooter({ onComplete }) {
       if (!done && !inTransition) {
         for (let bi = bullets.length - 1; bi >= 0; bi--) {
           const b = bullets[bi]
-          if (Math.abs(b.x - bossX) < 10 && Math.abs(b.y - bossY) < 10) {
+          const bossHitR = isPoweredUp ? 14 : 10
+          if (Math.abs(b.x - bossX) < bossHitR && Math.abs(b.y - bossY) < bossHitR) {
             bullets.splice(bi, 1)
             bossHP -= phase.playerDmg
             shakeTimer = 0.2; shakeIntensity = 5
@@ -684,9 +745,10 @@ export default function SpaceShooter({ onComplete }) {
 
       // ---- Ship ----
       const shipXp = (ship.x / 100) * w, shipYp = h * 0.92
-      drawShip(ctx, shipXp, shipYp, w, now, putriImgRef.current, hitFlashTimer)
+      drawShip(ctx, shipXp, shipYp, w, now, putriImgRef.current, hitFlashTimer, isPoweredUp)
       drawFallingHeads(ctx, fallingHeads, dt, w, h, putriImgRef.current)
       drawHitReaction(ctx, hitReaction, Math.min(1, hitReactionTimer * 1.5), shipXp, shipYp, w, 0)
+      if (powerUpMsg && powerUpMsgTimer > 0) drawHitReaction(ctx, '⚡ ' + powerUpMsg, Math.min(1, powerUpMsgTimer * 0.7), shipXp, shipYp, w, 30)
 
       // ---- HP Bar (top area) ----
       if (deathTimer <= 0 && !done) {
